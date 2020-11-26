@@ -1,6 +1,6 @@
 # ASCII Magic
 
-Python package that converts images into ASCII art with terminal colors. Thanks to Colorama it's compatible with the Windows terminal. Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
+Python package that converts images into ASCII art for terminals and HTML. Thanks to Colorama it's compatible with the Windows terminal. Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 ![ASCII Magic example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example.png)
 
@@ -12,9 +12,9 @@ output = ascii_magic.from_image_file('picture.jpg')
 ascii_magic.to_terminal(output)
 ```
 
-## Available functions
+# Available functions
 
-### from_image_file()
+## from_image_file()
 
 Converts an image file into ASCII art with terminal color codes.
 
@@ -22,23 +22,36 @@ Converts an image file into ASCII art with terminal color codes.
 from_image_file(
     path: str,
     columns: int = 120,
-    width_ratio: float = 2.5,
-    char: str = None
+    width_ratio: float = 2,
+    char: str = None,
+    mode: Modes = Modes.TERMINAL,
 ) -> str
 ```
 
-- path => a PIL-compatible file, such as picture.jpg
+- path => a PIL-compatible file, such as a jpeg or png
 - columns (optional) => the number of characters per row, more columns = wider art
-- pixel_width (optional) => ASCII characters are not square, so this adjusts the width to height ratio
+- pixel_width (optional) => ASCII characters are not squares, so this adjusts the width to height ratio
 - char (optional) => instead of using many different ASCII glyphs, you can use a single one, such as '#'
+- mode (optional) => one of:
+  - ```ascii_magic.Modes.TERMINAL```  => outputs ASCII with terminal color codes
+  - ```ascii_magic.Modes.HTML_TERMINAL``` => outputs HTML that simulates terminal colors; just wrap it inside a ```<pre>```
+  - ```ascii_magic.Modes.HTML``` => as above, but with full color
 
 Example:
 
 ```python
-from_image_file('images/1.jpg', columns=100, width_ratio=2.6, char='@')
+ascii_magic.from_image_file(
+    'images/lion.jpg',
+    columns=200,
+    mode=ascii_magic.Modes.HTML
+)
 ```
 
-### from_url()
+Result:
+
+![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion.png)
+
+## from_url()
 
 As above, but using the URL of an image.
 
@@ -58,7 +71,7 @@ img_url = 'https://source.unsplash.com/800x600?nature'
 ascii_art = ascii_magic.from_url(img_url, columns=100)
 ```
 
-### from_image()
+## from_image()
 
 As above, but using an image loaded with Pillow.
 
@@ -79,7 +92,7 @@ with Image.open('images/1.jpg') as img:
     ascii_art = ascii_magic.from_image(img, columns=100)
 ```
 
-### to_terminal()
+## to_terminal()
 
 Initializes Colorama (which is required on Windows) and prints ASCII art to the terminal. It's the same as doing ```colorama.init()``` before printing normally.
 
@@ -87,7 +100,7 @@ Initializes Colorama (which is required on Windows) and prints ASCII art to the 
 to_terminal(ascii_art: str) -> None
 ```
 
-## Licence
+# Licence
 
 Copyright (c) 2020 Leandro Barone.
 
