@@ -28,6 +28,10 @@ class Modes(Enum):
 Back = colorama.Back
 
 
+def quick_test() -> None:
+	to_terminal(from_url('https://source.unsplash.com/800x600?landscapes'))
+
+
 def from_url(url: str, **kwargs) -> str:
 	with urllib.request.urlopen(url) as response:
 		with Image.open(response) as img:
@@ -66,9 +70,9 @@ def from_image(img: Image, columns=120, width_ratio=2, char=None, mode: Modes=Mo
 			brightness = grayscale_img.getpixel((w, h)) / 255
 			pixel = rgb_img.getpixel((w, h))
 			# getpixel() may return an int, instead of tuple of ints, if the
-			# source img is a PNG with a transparency layer.
-			# if isinstance(pixel, int):
-				# pixel = (pixel, pixel, 255)
+			# source img is a PNG with a transparency layer
+			if isinstance(pixel, int):
+				pixel = (pixel, pixel, 255)
 
 			srgb = [ (v/255.0)**2.2 for v in pixel ]
 			char = chars[int(brightness * (len(chars) - 1))]

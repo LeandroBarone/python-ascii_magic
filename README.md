@@ -31,7 +31,7 @@ from_image_file(
 
 - path => a PIL-compatible file, such as a jpeg or png
 - columns (optional) => the number of characters per row, more columns = wider art
-- pixel_width (optional) => ASCII characters are not squares, so this adjusts the width to height ratio
+- width_ratio (optional) => ASCII characters are not squares, so this adjusts the width to height ratio
 - char (optional) => instead of using many different ASCII glyphs, you can use a single one, such as '#'
 - back (optional) => In terminal mode, sets the background color with one of:
   - ```ascii_magic.Back.BLACK```
@@ -109,6 +109,14 @@ Initializes Colorama (which is required on Windows) and prints ASCII art to the 
 
 ```python
 to_terminal(ascii_art: str) -> None
+```
+
+## quick_test()
+
+Runs ascii_magic against a random Unsplash picture with the default parameters and prints it to the terminal.
+
+```python
+quick_test() -> None
 ```
 
 # Licence
