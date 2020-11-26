@@ -16,7 +16,7 @@ ascii_magic.to_terminal(output)
 
 ## from_image_file()
 
-Converts an image file into ASCII art with terminal color codes.
+Converts an image file into ASCII art.
 
 ```python
 from_image_file(
@@ -34,6 +34,7 @@ from_image_file(
 - char (optional) => instead of using many different ASCII glyphs, you can use a single one, such as '#'
 - mode (optional) => one of:
   - ```ascii_magic.Modes.TERMINAL```  => outputs ASCII with terminal color codes
+  - ```ascii_magic.Modes.ASCII```  => outputs pure ASCII with no color codes, resulting in a "grayscale" image
   - ```ascii_magic.Modes.HTML_TERMINAL``` => outputs HTML that simulates terminal colors; just wrap it inside a ```<pre>```
   - ```ascii_magic.Modes.HTML``` => as above, but with full color
 
