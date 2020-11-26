@@ -25,6 +25,8 @@ class Modes(Enum):
 	TERMINAL = 'TERMINAL'
 	HTML_TERMINAL = 'HTML_TERMINAL'
 
+Back = colorama.Back
+
 
 def from_url(url: str, **kwargs) -> str:
 	with urllib.request.urlopen(url) as response:
@@ -37,7 +39,7 @@ def from_image_file(img_path: str, **kwargs) -> str:
 		return from_image(img, **kwargs)
 
 
-def from_image(img: Image, columns=120, width_ratio=2, char=None, mode: Modes=Modes.TERMINAL, debug=False) -> str:
+def from_image(img: Image, columns=120, width_ratio=2, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
 	if mode not in Modes:
 		raise ValueError('Unknown output mode ' + mode)
 
@@ -72,7 +74,10 @@ def from_image(img: Image, columns=120, width_ratio=2, char=None, mode: Modes=Mo
 			char = chars[int(brightness * (len(chars) - 1))]
 			line += _build_char(char, srgb, brightness, mode)
 
-		lines.append(line)
+		if mode == Modes.TERMINAL and back:
+			lines.append(back + line + Back.RESET)
+		else:
+			lines.append(line)
 
 	if mode == Modes.TERMINAL:
 		return '\n'.join(lines) + colorama.Fore.RESET

@@ -24,6 +24,7 @@ from_image_file(
     columns: int = 120,
     width_ratio: float = 2,
     char: str = None,
+    back: Back = None,
     mode: Modes = Modes.TERMINAL,
 ) -> str
 ```
@@ -32,6 +33,15 @@ from_image_file(
 - columns (optional) => the number of characters per row, more columns = wider art
 - pixel_width (optional) => ASCII characters are not squares, so this adjusts the width to height ratio
 - char (optional) => instead of using many different ASCII glyphs, you can use a single one, such as '#'
+- back (optional) => In terminal mode, sets the background color with one of:
+  - ```ascii_magic.Back.BLACK```
+  - ```ascii_magic.Back.RED```
+  - ```ascii_magic.Back.GREEN```
+  - ```ascii_magic.Back.YELLOW```
+  - ```ascii_magic.Back.BLUE```
+  - ```ascii_magic.Back.MAGENTA```
+  - ```ascii_magic.Back.CYAN```
+  - ```ascii_magic.Back.WHITE```
 - mode (optional) => one of:
   - ```ascii_magic.Modes.TERMINAL```  => outputs ASCII with terminal color codes
   - ```ascii_magic.Modes.ASCII```  => outputs pure ASCII with no color codes, resulting in a "grayscale" image
