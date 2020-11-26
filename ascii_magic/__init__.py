@@ -1,6 +1,7 @@
 import colorama
 from PIL import Image
 
+import urllib.request
 
 CHARS_BY_DENSITY = '" .`-_\':,;^=+/"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q'
 
@@ -18,9 +19,15 @@ COLOR_DATA = [
 PALETTE = [ [[(v/255.0)**2.2 for v in x[0]], x[1]] for x in COLOR_DATA ]
 
 
-def from_image_file(img_path: str, columns=120, width_ratio=2.5, char=None) -> None:
+def from_url(url: str, **kwargs) -> None:
+	with urllib.request.urlopen(url) as response:
+		with Image.open(response) as img:
+			return from_image(img, **kwargs)
+
+
+def from_image_file(img_path: str, **kwargs) -> None:
 	with Image.open(img_path) as img:
-		return from_image(img, columns, width_ratio, char)
+		return from_image(img, **kwargs)
 
 
 def from_image(img: Image, columns=120, width_ratio=2.5, char=None) -> None:

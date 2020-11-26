@@ -1,6 +1,8 @@
 # ASCII Magic
 
-Python package that converts images into ASCII art. Requires colorama and PIL.
+Python package that converts images into ASCII art with terminal colors. Thanks to Colorama it's compatible with the Windows terminal. Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
+
+![ASCII Magic example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example.png)
 
 ## Basic usage
 
@@ -18,10 +20,10 @@ Converts an image file into ASCII art with terminal color codes.
 
 ```python
 from_image_file(
-    path:str,
-    columns:int=120,
-    width_ratio:float=2.5,
-    char:str=None
+    path: str,
+    columns: int = 120,
+    width_ratio: float = 2.5,
+    char: str = None
 ) -> str
 ```
 
@@ -36,35 +38,53 @@ Example:
 from_image_file('images/1.jpg', columns=100, width_ratio=2.6, char='@')
 ```
 
+### from_url()
+
+As above, but using the URL of an image.
+
+```python
+from_url(
+    url: str,
+    # ... as above
+) -> str
+```
+
+- url => an URL which will be loaded via urllib (supports redirects)
+
+Example:
+
+```python
+img_url = 'https://source.unsplash.com/800x600?nature'
+ascii_art = ascii_magic.from_url(img_url, columns=100)
+```
+
 ### from_image()
 
 As above, but using an image loaded with Pillow.
 
 ```python
 from_image(
-    img:Image,
+    img: Image,
     # ... as above
 ) -> str
 ```
 
-- img => PIL image
+- img => PIL image object
 
 Example:
 
 ```python
-import ascii_magic
 from PIL import Image
-img = Image.open('images/1.jpg')
-ascii_art = ascii_magic.from_image_file(img, columns=100)
-img.close()
+with Image.open('images/1.jpg') as img:
+    ascii_art = ascii_magic.from_image(img, columns=100)
 ```
 
 ### to_terminal()
 
-Initializes colorama (which is required on Windows) and prints ASCII art to the terminal. It's the same as doing ```colorama.init()``` before printing normally.
+Initializes Colorama (which is required on Windows) and prints ASCII art to the terminal. It's the same as doing ```colorama.init()``` before printing normally.
 
 ```python
-to_terminal(ascii_art:str) -> None
+to_terminal(ascii_art: str) -> None
 ```
 
 ## Licence
