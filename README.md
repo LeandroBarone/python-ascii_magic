@@ -1,6 +1,10 @@
 # ASCII Magic
 
-Python package that converts images into ASCII art for terminals and HTML. Thanks to Colorama it's compatible with the Windows terminal. Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
+Python package that converts images into ASCII art for terminals and HTML. Thanks to [Colorama](https://github.com/tartley/colorama) it's compatible with the Windows terminal. Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
+
+## Instalation
+
+    pip install ascii_magic
 
 ## Basic usage
 
@@ -24,18 +28,18 @@ Converts an image file into ASCII art.
 ascii_magic.from_image_file(
     path: str,
     columns: int = 120,
-    width_ratio: float = 2,
+    width_ratio: float = 2.2,
     char: str = None,
     back: Back = None,
     mode: Modes = Modes.TERMINAL,
 ) -> str
 ```
 
-- path => a PIL-compatible file, such as a jpeg or png
-- columns (optional) => the number of characters per row, more columns = wider art
-- width_ratio (optional) => ASCII characters are not squares, so this adjusts the width to height ratio
-- char (optional) => instead of using many different ASCII glyphs, you can use a single one, such as '#'
-- back (optional) => In terminal mode, sets the background color with one of:
+- ```path```: a PIL-compatible file, such as a jpeg or png
+- ```columns (optional)```: the number of characters per row, more columns = wider art
+- ```width_ratio (optional)```: ASCII characters are not squares, so this adjusts the width to height ratio
+- ```char (optional)```: instead of using many different ASCII glyphs, you can use a single one, such as '#'
+- ```back (optional)```: In terminal mode, sets the background color with one of:
   - ```ascii_magic.Back.BLACK```
   - ```ascii_magic.Back.RED```
   - ```ascii_magic.Back.GREEN```
@@ -44,11 +48,11 @@ ascii_magic.from_image_file(
   - ```ascii_magic.Back.MAGENTA```
   - ```ascii_magic.Back.CYAN```
   - ```ascii_magic.Back.WHITE```
-- mode (optional) => one of:
-  - ```ascii_magic.Modes.TERMINAL```  => outputs ASCII with terminal color codes (8 tones)
-  - ```ascii_magic.Modes.ASCII```  => outputs pure ASCII with no color codes, resulting in a "grayscale" image
-  - ```ascii_magic.Modes.HTML_TERMINAL``` => outputs HTML simulating terminal colors; wrap it in a ```<pre>```
-  - ```ascii_magic.Modes.HTML``` => as above, but with full color
+- ```mode (optional)```: one of:
+  - ```ascii_magic.Modes.TERMINAL```: outputs ASCII with terminal color codes (8 tones)
+  - ```ascii_magic.Modes.ASCII```: outputs pure ASCII with no color codes, resulting in a "grayscale" image
+  - ```ascii_magic.Modes.HTML_TERMINAL```: outputs HTML simulating terminal colors; wrap it in a ```<pre>```
+  - ```ascii_magic.Modes.HTML```: as above, but with full color
 
 Example:
 
@@ -104,7 +108,7 @@ ascii_magic.from_url(
 ) -> str
 ```
 
-- url => an URL which will be loaded via urllib (supports redirects)
+- ```url```: an URL which will be loaded via urllib (supports redirects)
 
 Example:
 
@@ -126,7 +130,10 @@ ascii_magic.from_clipboard(
 Example:
 
 ```python
-output = ascii_magic.from_clipboard(columns=100)
+try:
+    output = ascii_magic.from_clipboard(columns=100)
+except ValueError:
+    print("The clipboard doesn't contain an image!")
 ```
 
 ## from_image()
@@ -140,13 +147,13 @@ ascii_magic.from_image(
 ) -> str
 ```
 
-- img => PIL image object
+- ```img```: PIL image object
 
 Example:
 
 ```python
 from PIL import Image
-with Image.open('images/1.jpg') as img:
+with Image.open('images/lion.jpg') as img:
     output = ascii_magic.from_image(img, columns=100)
 ```
 
@@ -172,17 +179,17 @@ ascii_magic.to_html(
 ) -> None
 ```
 
-- path => The relative path and filename of the HTML file
-- input => The markup which will be included
-- styles => A string with a bunch of CSS styles for the ```<pre>``` element, by default:
+- ```path```: The relative path and filename of the HTML file
+- ```input```: The markup which will be included
+- ```styles (optional)```: A string with a bunch of CSS styles for the ```<pre>``` element, by default:
   - display: inline-block;
   - border-width: 4px 6px;
   - border-color: black;
   - border-style: solid;
   - background-color: black;
   - font-size: 8px;
-- additional_styles => You can add your own styles without removing the default ones
-- auto_open => If ```True```, ```webbrowser.open()``` will be called on the HTML file
+- ```additional_styles (optional)```: You can add your own styles without removing the default ones
+- ```auto_open (optional)```: If True, ```webbrowser.open()``` will be called on the HTML file
 
 example:
 

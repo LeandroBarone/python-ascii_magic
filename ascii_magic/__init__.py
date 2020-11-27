@@ -5,9 +5,7 @@ import webbrowser
 import urllib.request
 from enum import Enum
 
-CHARS_BY_DENSITY = ' .`-_\':,;^=+/"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q'
-
-COLOR_DATA = [
+_COLOR_DATA = [
 	[(  0,   0,   0), colorama.Fore.LIGHTBLACK_EX, '#222'],
 	[(  0,   0, 255), colorama.Fore.BLUE, '#00F'],
 	[(  0, 255,   0), colorama.Fore.GREEN, '#0F0'],
@@ -18,7 +16,8 @@ COLOR_DATA = [
 	[(255, 255,   0), colorama.Fore.YELLOW, '#FF0']
 ]
 
-PALETTE = [ [[(v/255.0)**2.2 for v in x[0]], x[1], x[2]] for x in COLOR_DATA ]
+PALETTE = [ [[(v/255.0)**2.2 for v in x[0]], x[1], x[2]] for x in _COLOR_DATA ]
+CHARS_BY_DENSITY = ' .`-_\':,;^=+/"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q'
 
 class Modes(Enum):
 	HTML = 'HTML'
@@ -53,7 +52,7 @@ def from_clipboard(**kwargs) -> str:
 	return from_image(img, **kwargs)
 
 
-def from_image(img: Image, columns=120, width_ratio=2.5, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
+def from_image(img: Image, columns=120, width_ratio=2.2, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
 	if mode not in Modes:
 		raise ValueError('Unknown output mode ' + mode)
 
@@ -131,7 +130,7 @@ def to_html_file(
 		webbrowser.open(path)
 
 
-def convert_color(rgb: list, brightness: float) -> int:
+def _convert_color(rgb: list, brightness: float) -> int:
 	min_distance = 2
 	index = 0
 
@@ -155,7 +154,7 @@ def _L2_min(v1: list, v2: list) -> float:
 
 
 def _build_char(char: str, srgb: list, brightness: float, mode: Modes = Modes.TERMINAL) -> str:
-	color = convert_color(srgb, brightness)
+	color = _convert_color(srgb, brightness)
 
 	if mode == Modes.TERMINAL:
 		return color['term'] + char
