@@ -99,7 +99,7 @@ Result:
 
 ## from_url()
 
-As above, but using the URL of an image.
+As above, but using the URL of an image. Raises an ```urllib.error.URLError``` if something goes wrong while requesting the image, but you can also catch it as an ```OSError``` if you don't want to import urllib to your project.
 
 ```python
 ascii_magic.from_url(
@@ -113,8 +113,11 @@ ascii_magic.from_url(
 Example:
 
 ```python
-img_url = 'https://source.unsplash.com/800x600?nature'
-output = ascii_magic.from_url(img_url, columns=100)
+try:
+    img_url = 'https://source.unsplash.com/800x600?nature'
+    output = ascii_magic.from_url(img_url, columns=100)
+except OSError as e:
+    print(f'Could not load the image, server said: {e.code} {e.msg}')
 ```
 
 ## from_clipboard()

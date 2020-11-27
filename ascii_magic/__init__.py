@@ -35,9 +35,12 @@ def quick_test() -> None:
 
 
 def from_url(url: str, **kwargs) -> str:
-	with urllib.request.urlopen(url) as response:
-		with Image.open(response) as img:
-			return from_image(img, **kwargs)
+	try:
+		with urllib.request.urlopen(url) as response:
+			with Image.open(response) as img:
+				return from_image(img, **kwargs)
+	except urllib.error.HTTPError as e:
+		raise urllib.error.HTTPError(url, e.code, e.msg, e.hdrs, e.fp) from None
 
 
 def from_image_file(img_path: str, **kwargs) -> str:
