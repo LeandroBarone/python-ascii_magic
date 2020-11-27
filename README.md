@@ -122,7 +122,7 @@ except OSError as e:
 
 ## from_clipboard()
 
-As above, but with the contents of the clipboard. Raises ValueError if the clipboard doesn't contain an image.
+As above, but with the contents of the clipboard. Raises a ```OSError``` if the clipboard doesn't contain an image.
 
 ```python
 ascii_magic.from_clipboard(
@@ -135,8 +135,8 @@ Example:
 ```python
 try:
     output = ascii_magic.from_clipboard(columns=100)
-except ValueError:
-    print("The clipboard doesn't contain an image!")
+except OSError:
+    print('The clipboard does not contain an image')
 ```
 
 ## from_image()

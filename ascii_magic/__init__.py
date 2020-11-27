@@ -51,7 +51,7 @@ def from_image_file(img_path: str, **kwargs) -> str:
 def from_clipboard(**kwargs) -> str:
 	img = ImageGrab.grabclipboard()
 	if not img:
-		raise ValueError('Image not found in clipboard')
+		raise OSError('The clipboard does not contain an image')
 	return from_image(img, **kwargs)
 
 
