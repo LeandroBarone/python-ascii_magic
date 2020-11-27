@@ -27,6 +27,8 @@ class Modes(Enum):
 
 Back = colorama.Back
 
+_colorama_is_init = False
+
 
 def quick_test() -> None:
 	to_terminal(from_url('https://source.unsplash.com/800x600?landscapes'))
@@ -92,7 +94,11 @@ def from_image(img: Image, columns=120, width_ratio=2.5, char=None, mode: Modes=
 
 
 def to_terminal(ascii_art: str) -> None:
-	colorama.init()
+	global _colorama_is_init
+	if not _colorama_is_init:
+		colorama.init()
+		_colorama_is_init = True
+
 	print(ascii_art)
 
 
