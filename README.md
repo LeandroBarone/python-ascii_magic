@@ -2,15 +2,17 @@
 
 Python package that converts images into ASCII art for terminals and HTML. Thanks to Colorama it's compatible with the Windows terminal. Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
-![ASCII Magic example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example.png)
-
 ## Basic usage
 
 ```python
 import ascii_magic
-output = ascii_magic.from_image_file('picture.jpg')
+output = ascii_magic.from_image_file('images/moon.jpg')
 ascii_magic.to_terminal(output)
 ```
+
+Result:
+
+![ASCII Magic example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_moon.png)
 
 # Available functions
 
@@ -19,7 +21,7 @@ ascii_magic.to_terminal(output)
 Converts an image file into ASCII art.
 
 ```python
-from_image_file(
+ascii_magic.from_image_file(
     path: str,
     columns: int = 120,
     width_ratio: float = 2,
@@ -43,31 +45,60 @@ from_image_file(
   - ```ascii_magic.Back.CYAN```
   - ```ascii_magic.Back.WHITE```
 - mode (optional) => one of:
-  - ```ascii_magic.Modes.TERMINAL```  => outputs ASCII with terminal color codes
+  - ```ascii_magic.Modes.TERMINAL```  => outputs ASCII with terminal color codes (8 tones)
   - ```ascii_magic.Modes.ASCII```  => outputs pure ASCII with no color codes, resulting in a "grayscale" image
-  - ```ascii_magic.Modes.HTML_TERMINAL``` => outputs HTML that simulates terminal colors; just wrap it inside a ```<pre>```
+  - ```ascii_magic.Modes.HTML_TERMINAL``` => outputs HTML simulating terminal colors; wrap it in a ```<pre>```
   - ```ascii_magic.Modes.HTML``` => as above, but with full color
 
 Example:
 
 ```python
-ascii_magic.from_image_file(
+output = ascii_magic.from_image_file(
     'images/lion.jpg',
     columns=200,
+    back=ascii_magic.Back.BLUE
+)
+```
+
+Result:
+
+![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_blue.png)
+
+Example:
+
+```python
+output = ascii_magic.from_image_file(
+    'images/lion.jpg',
+    columns=200,
+    width_ratio=2,
     mode=ascii_magic.Modes.HTML
 )
 ```
 
 Result:
 
-![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion.png)
+![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_html.png)
+
+Example:
+
+```python
+output = ascii_magic.from_image_file(
+    'images/lion.jpg',
+    columns=200,
+    mode=ascii_magic.Modes.ASCII
+)
+```
+
+Result:
+
+![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
 
 ## from_url()
 
 As above, but using the URL of an image.
 
 ```python
-from_url(
+ascii_magic.from_url(
     url: str,
     # ... as above
 ) -> str
@@ -79,7 +110,7 @@ Example:
 
 ```python
 img_url = 'https://source.unsplash.com/800x600?nature'
-ascii_art = ascii_magic.from_url(img_url, columns=100)
+output = ascii_magic.from_url(img_url, columns=100)
 ```
 
 ## from_image()
@@ -87,7 +118,7 @@ ascii_art = ascii_magic.from_url(img_url, columns=100)
 As above, but using an image loaded with Pillow.
 
 ```python
-from_image(
+ascii_magic.from_image(
     img: Image,
     # ... as above
 ) -> str
@@ -100,23 +131,23 @@ Example:
 ```python
 from PIL import Image
 with Image.open('images/1.jpg') as img:
-    ascii_art = ascii_magic.from_image(img, columns=100)
+    output = ascii_magic.from_image(img, columns=100)
 ```
 
 ## to_terminal()
 
-Initializes Colorama (which is required on Windows) and prints ASCII art to the terminal. It's the same as doing ```colorama.init()``` before printing normally.
+Initializes Colorama, which is required on Windows for displaying art in terminal mode, and prints the input. It's the same as doing ```colorama.init()``` before running ```print()```.
 
 ```python
-to_terminal(ascii_art: str) -> None
+ascii_magic.to_terminal(input: str) -> None
 ```
 
 ## quick_test()
 
-Runs ascii_magic against a random Unsplash picture with the default parameters and prints it to the terminal.
+Runs ascii_magic with a random Unsplash picture with the default parameters and prints it to the terminal.
 
 ```python
-quick_test() -> None
+ascii_magic.quick_test() -> None
 ```
 
 # Licence
