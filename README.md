@@ -157,9 +157,17 @@ with Image.open('images/lion.jpg') as img:
     output = ascii_magic.from_image(img, columns=100)
 ```
 
+## init_terminal()
+
+Initializes Colorama, which is required on Windows for displaying art in terminal mode. It's the same as doing ```colorama.init()```.
+
+```python
+ascii_magic.init_terminal() -> None
+```
+
 ## to_terminal()
 
-Initializes Colorama, which is required on Windows for displaying art in terminal mode, and prints the input. It's the same as doing ```colorama.init()``` before running ```print()```.
+Initializes Colorama, which is required on Windows for displaying art in terminal mode, and prints the input. It's the same as doing ```colorama.init()``` and then ```print()```.
 
 ```python
 ascii_magic.to_terminal(input: str) -> None

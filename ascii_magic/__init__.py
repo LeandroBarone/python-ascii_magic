@@ -100,12 +100,15 @@ def from_image(img: Image, columns=120, width_ratio=2.2, char=None, mode: Modes=
 		return '<br />'.join(lines)
 
 
-def to_terminal(ascii_art: str) -> None:
+def init_terminal() -> None:
 	global _colorama_is_init
 	if not _colorama_is_init:
 		colorama.init()
 		_colorama_is_init = True
 
+
+def to_terminal(ascii_art: str) -> None:
+	init_terminal()
 	print(ascii_art)
 
 
