@@ -113,6 +113,22 @@ img_url = 'https://source.unsplash.com/800x600?nature'
 output = ascii_magic.from_url(img_url, columns=100)
 ```
 
+## from_clipboard()
+
+As above, but with the contents of the clipboard. Raises ValueError if the clipboard doesn't contain an image.
+
+```python
+ascii_magic.from_clipboard(
+    # ... as above
+) -> str
+```
+
+Example:
+
+```python
+output = ascii_magic.from_clipboard(columns=100)
+```
+
 ## from_image()
 
 As above, but using an image loaded with Pillow.

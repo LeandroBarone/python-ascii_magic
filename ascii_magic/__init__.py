@@ -1,5 +1,5 @@
 import colorama
-from PIL import Image
+from PIL import Image, ImageGrab
 
 import urllib.request
 from enum import Enum
@@ -43,6 +43,13 @@ def from_url(url: str, **kwargs) -> str:
 def from_image_file(img_path: str, **kwargs) -> str:
 	with Image.open(img_path) as img:
 		return from_image(img, **kwargs)
+
+
+def from_clipboard(**kwargs) -> str:
+	img = ImageGrab.grabclipboard()
+	if not img:
+		raise ValueError('Image not found in clipboard')
+	return from_image(img, **kwargs)
 
 
 def from_image(img: Image, columns=120, width_ratio=2.5, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
