@@ -158,6 +158,39 @@ Initializes Colorama, which is required on Windows for displaying art in termina
 ascii_magic.to_terminal(input: str) -> None
 ```
 
+## to_html_file()
+
+Writes the input to a barebones HTML file inside a ```<pre>```.
+
+```python
+ascii_magic.to_html(
+    path: str,
+    input: str,
+    styles: str = '...', # See description
+    additional_styles: str = '',
+    auto_open: bool = False
+) -> None
+```
+
+- path => The relative path and filename of the HTML file
+- input => The markup which will be included
+- styles => A string with a bunch of CSS styles for the ```<pre>``` element, by default:
+  - display: inline-block;
+  - border-width: 4px 6px;
+  - border-color: black;
+  - border-style: solid;
+  - background-color: black;
+  - font-size: 8px;
+- additional_styles => You can add your own styles without removing the default ones
+- auto_open => If ```True```, ```webbrowser.open()``` will be called on the HTML file
+
+example:
+
+```python
+output = ascii_magic.from_image_file('images/lion.jpg', mode=ascii_magic.Modes.HTML)
+ascii_magic.to_html_file('lion.html', output, additional_styles='background: #222;')
+```
+
 ## quick_test()
 
 Runs ascii_magic with a random Unsplash picture with the default parameters and prints it to the terminal.

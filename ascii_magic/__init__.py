@@ -1,6 +1,7 @@
 import colorama
 from PIL import Image, ImageGrab
 
+import webbrowser
 import urllib.request
 from enum import Enum
 
@@ -107,6 +108,27 @@ def to_terminal(ascii_art: str) -> None:
 		_colorama_is_init = True
 
 	print(ascii_art)
+
+
+def to_html_file(
+	path: str,
+	art: str,
+	styles: str = 'display: inline-block; border-width: 4px 6px; border-color: black; border-style: solid; background-color:black; font-size: 8px;',
+	additional_styles: str= '',
+	auto_open: bool = False,
+) -> None:
+	html = f"""<!DOCTYPE html>
+<head>
+	<title>ASCII art</title>
+</head>
+<body>
+	<pre style="{styles} {additional_styles}">{art}</pre>
+</body>
+</html>"""
+	with open(path, 'w') as f:
+		f.write(html)
+	if auto_open:
+		webbrowser.open(path)
 
 
 def convert_color(rgb: list, brightness: float) -> int:
