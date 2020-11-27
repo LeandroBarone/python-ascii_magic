@@ -43,7 +43,7 @@ def from_image_file(img_path: str, **kwargs) -> str:
 		return from_image(img, **kwargs)
 
 
-def from_image(img: Image, columns=120, width_ratio=2, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
+def from_image(img: Image, columns=120, width_ratio=2.5, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
 	if mode not in Modes:
 		raise ValueError('Unknown output mode ' + mode)
 
