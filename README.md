@@ -124,6 +124,8 @@ except OSError as e:
 
 As above, but with the contents of the clipboard. Raises a ```OSError``` if the clipboard doesn't contain an image.
 
+Requires [PyGObject](https://pygobject.readthedocs.io/en/latest/getting_started.html) under Linux.
+
 ```python
 ascii_magic.from_clipboard(
     # ... as above

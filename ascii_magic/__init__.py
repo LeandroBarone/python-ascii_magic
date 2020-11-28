@@ -49,10 +49,40 @@ def from_image_file(img_path: str, **kwargs) -> str:
 
 
 def from_clipboard(**kwargs) -> str:
-	img = ImageGrab.grabclipboard()
+	try:
+		img = ImageGrab.grabclipboard()
+	except NotImplementedError:
+		img = from_clipboard_linux()
 	if not img:
 		raise OSError('The clipboard does not contain an image')
 	return from_image(img, **kwargs)
+
+
+def from_clipboard_linux():
+	try:
+		import gi
+		gi.require_version("Gtk", "3.0")
+		from gi.repository import Gtk, Gdk
+	except ModuleNotFoundError:
+		print('Accessing the clipboard under Linux requires the PyGObject module')
+		print('Ubuntu/Debian: sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-3.0')
+		print('Fedora: sudo dnf install python3-gobject gtk3')
+		print('Arch: sudo pacman -S python-gobject gtk3')
+		print('openSUSE: sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-3_0 libgtk-3-0')
+		exit()
+
+	clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+	try:
+		buffer = clipboard.wait_for_image()
+		data = buffer.get_pixels()
+		w = buffer.props.width
+		h = buffer.props.height
+		stride = buffer.props.rowstride
+	except AttributeError:
+		return None
+	mode = 'RGB'
+	pimg = Image.frombytes(mode, (w, h), data, 'raw', mode, stride)
+	return pimg
 
 
 def from_image(img: Image, columns=120, width_ratio=2.2, char=None, mode: Modes=Modes.TERMINAL, back: Back = None, debug=False) -> str:
