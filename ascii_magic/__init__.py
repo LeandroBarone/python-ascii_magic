@@ -94,6 +94,7 @@ def from_image(img: Image, columns=120, width_ratio=2.2, char=None, mode: Modes=
 	img_w = int(img_w*width_ratio / scalar)
 	img_h = int(img_h / scalar)
 	rgb_img = img.resize((img_w, img_h))
+	color_palette = img.getpalette()
 
 	grayscale_img = rgb_img.convert("L")
 
@@ -114,7 +115,7 @@ def from_image(img: Image, columns=120, width_ratio=2.2, char=None, mode: Modes=
 			# getpixel() may return an int, instead of tuple of ints, if the
 			# source img is a PNG with a transparency layer
 			if isinstance(pixel, int):
-				pixel = (pixel, pixel, 255)
+				pixel = (pixel, pixel, 255) if color_palette is None else tuple(color_palette[pixel*3:pixel*3 + 3])
 
 			srgb = [ (v/255.0)**2.2 for v in pixel ]
 			char = chars[int(brightness * (len(chars) - 1))]
