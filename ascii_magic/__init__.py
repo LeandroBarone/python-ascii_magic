@@ -1,5 +1,5 @@
 import colorama
-from PIL import Image, ImageGrab
+from PIL import Image
 
 import webbrowser
 import urllib.request
@@ -50,8 +50,9 @@ def from_image_file(img_path: str, **kwargs) -> str:
 
 def from_clipboard(**kwargs) -> str:
 	try:
+		from PIL import ImageGrab
 		img = ImageGrab.grabclipboard()
-	except NotImplementedError:
+	except (NotImplementedError, ImportError):
 		img = from_clipboard_linux()
 	if not img:
 		raise OSError('The clipboard does not contain an image')
@@ -78,7 +79,7 @@ def from_clipboard_linux():
 		w = buffer.props.width
 		h = buffer.props.height
 		stride = buffer.props.rowstride
-	except AttributeError:
+	except:
 		return None
 	mode = 'RGB'
 	pimg = Image.frombytes(mode, (w, h), data, 'raw', mode, stride)
