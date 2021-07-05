@@ -51,7 +51,7 @@ ascii_magic.from_image_file(
 - ```mode (optional)```: one of:
   - ```ascii_magic.Modes.TERMINAL```: outputs ASCII with terminal color codes (8 tones)
   - ```ascii_magic.Modes.ASCII```: outputs pure ASCII with no color codes, resulting in a "grayscale" image
-  - ```ascii_magic.Modes.HTML_TERMINAL```: outputs HTML simulating terminal colors; wrap it in a ```<pre>```
+  - ```ascii_magic.Modes.HTML_TERMINAL```: outputs HTML simulating terminal colors
   - ```ascii_magic.Modes.HTML```: as above, but with full color
 
 Example:
@@ -62,11 +62,12 @@ output = ascii_magic.from_image_file(
     columns=200,
     back=ascii_magic.Back.BLUE
 )
+ascii_magic.to_terminal(output)
 ```
 
 Result:
 
-![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_blue.png)
+![ASCII Magic TERMINAL mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_blue.png)
 
 Example:
 
@@ -77,6 +78,7 @@ output = ascii_magic.from_image_file(
     width_ratio=2,
     mode=ascii_magic.Modes.HTML
 )
+ascii_magic.to_html_file('asciiart.html', output)
 ```
 
 Result:
@@ -91,11 +93,12 @@ output = ascii_magic.from_image_file(
     columns=200,
     mode=ascii_magic.Modes.ASCII
 )
+ascii_magic.to_terminal(output)
 ```
 
 Result:
 
-![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
+![ASCII Magic ASCII mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
 
 ## from_url()
 
@@ -183,7 +186,7 @@ ascii_magic.to_terminal(input: str) -> None
 Writes the input to a barebones HTML file inside a ```<pre>```.
 
 ```python
-ascii_magic.to_html(
+ascii_magic.to_html_file(
     path: str,
     input: str,
     styles: str = '...', # See description
