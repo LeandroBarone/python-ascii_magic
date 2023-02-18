@@ -6,6 +6,9 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.1
+- DALL•E support
+
 ### v2.0
 - Complete rewrite, only supports OOP, no longer compatible with 1.x
 - Added support for foreground color
@@ -53,7 +56,7 @@ from_image(path: str) -> AsciiArt
 
 Parameters:
 
-- ```path```: an image file compatible with Pillow, such as a jpeg or png
+- ```path (str)```: an image file compatible with Pillow, such as a jpeg or png
 
 Example:
 
@@ -95,6 +98,39 @@ Result:
 
 ![ASCII Magic ASCII mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
 
+
+## from_dalle()
+
+Creates an ```AsciiArt``` object with [DALL•E](https://openai.com/dall-e/), a deep learning model that can generate realistic images from a description in natural language. Requires a [DALL•E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module, as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
+
+```python
+from_dalle(
+    prompt: str,
+    api_key: Optional[str]
+) -> AsciiArt
+```
+
+Parameters:
+
+- ```prompt (str)```: a description of an image in natural language
+- ```api_key (str, optional)```: a DALL•E API key
+
+Example:
+
+```python
+import ascii_magic
+import os
+
+api_key = os.environ.get('MY_DALLE_API_KEY')
+
+my_art = ascii_magic.from_dalle('A portrait of a cow with noble clothes, digital art', api_key)
+my_art.to_html_file('cow.html', columns=200)
+```
+
+Result:
+
+![ASCII Magic DALL•E example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_dalle.png)
+
 ## from_url()
 
 Creates an ```AsciiArt``` object from an image URL. Raises an ```urllib.error.URLError``` if something goes wrong while requesting the image, but you can also catch it as an ```OSError``` if you don't want to import ```urllib``` into your project.
@@ -105,7 +141,7 @@ from_url(url: str) -> AsciiArt
 
 Parameters:
 
-- ```url```: an URL which will be loaded via urllib (supports redirects)
+- ```url (str)```: an URL which will be loaded via urllib (supports redirects)
 
 Example:
 
@@ -147,7 +183,7 @@ from_pillow_image(img: PIL.Image) -> AsciiArt
 
 Parameters:
 
-- ```img```: an image object created with Pillow
+- ```img (obj)```: an image object created with Pillow
 
 Example:
 

@@ -7,9 +7,11 @@ from PIL import Image
 
 from typing import Optional
 from enum import Enum
+from time import time
+from json import dumps
 
 
-__VERSION__ = 2
+__VERSION__ = 2.1
 
 
 class Modes(Enum):
@@ -286,6 +288,11 @@ class AsciiMagic:
         return AsciiArt(img)
 
     @classmethod
+    def from_dalle(cls, prompt: str, api_key: Optional[str] = None, debug: bool = False) -> AsciiArt:
+        img = cls._load_dalle(prompt, api_key, debug)
+        return AsciiArt(img)
+
+    @classmethod
     def quick_test(cls):
         img = cls.from_url('https://source.unsplash.com/800x600?landscapes')
         img.to_terminal()
@@ -373,3 +380,36 @@ class AsciiMagic:
         mode = 'RGB'
         img = Image.frombytes(mode, (w, h), data, 'raw', mode, stride)
         return img
+
+    @classmethod
+    def _load_dalle(
+        cls,
+        prompt: str,
+        api_key: Optional[str] = None,
+        debug: bool = False
+    ) -> Image.Image:
+        try:
+            import openai
+        except ModuleNotFoundError:
+            print('Accessing DALL-E requires the openai module')
+            print('pip install openai')
+            exit()
+
+        if api_key:
+            openai.api_key = api_key
+
+        if not openai.api_key:
+            raise ValueError('You must set up an API key before accessing DALL-E')
+
+        response = openai.Image.create(
+            prompt=prompt,
+            n=1,
+            size='256x256'
+        )
+
+        if debug:
+            with open(str(int(time())) + '.json', 'w') as f:
+                f.write(dumps(response))
+
+        url = response['data'][0]['url']  # type: ignore
+        return cls._load_url(url)
