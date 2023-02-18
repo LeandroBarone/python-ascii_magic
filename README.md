@@ -25,9 +25,9 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 # Quickstart
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
-my_art = ascii_magic.from_image('images/moon.jpg')
+my_art = AsciiArt.from_image('images/moon.jpg')
 my_art.to_terminal()
 ```
 
@@ -36,14 +36,41 @@ Result:
 ![ASCII Magic example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_moon.png)
 
 
-# Available functions
+# The class AsciiArt
+
+This module's entire functionality is contained within the class AsciiArt, which has a collection class methods, such as ```AsciiArt.from_image()```, that return ```AsciiArt``` objects with pictures from different sources: files, URLs, the clipboard, etc.
+
+These objects have multiple methods, such as ```my_art.to_terminal()```, that generate ASCII art pieces from the picture. These methods have parameters such as ```columns``` that allow you to change the appearance of the art piece.
+
+For convenience, the module ```ascii_magic``` also exposes a collection of functions with the same name as the class methods mentioned above, which do exactly the same.
+
+Example:
+
+```python
+from ascii_magic import AsciiArt, from_image
+
+# This:
+my_art = AsciiArt.from_image('lion.jpg')
+my_art.to_terminal()
+# Does the same as this:
+my_art = from_image('lion.jpg')
+my_art.to_terminal()
+```
 
 ## quick_test()
 
 Loads a random Unsplash picture with the default parameters and prints it to the terminal, allowing you to verify in a single line of code that everything is running O.K.
 
 ```python
-ascii_magic.quick_test() -> None
+AsciiArt.quick_test() -> None
+```
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+AsciiArt.quick_test()
 ```
 
 ## from_image()
@@ -61,10 +88,10 @@ Parameters:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt, Back
 
-my_art = ascii_magic.from_image('images/lion.jpg')
-my_art.to_terminal(columns=200, back=ascii_magic.Back.BLUE)
+my_art = AsciiArt.from_image('images/lion.jpg')
+my_art.to_terminal(columns=200, back=Back.BLUE)
 ```
 
 Result:
@@ -74,9 +101,9 @@ Result:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
-my_art = ascii_magic.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('images/lion.jpg')
 my_art.to_html_file('ascii_art.html', columns=200, width_ratio=2)
 ```
 
@@ -87,9 +114,9 @@ Result:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
-my_art = ascii_magic.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('images/lion.jpg')
 my_art.to_terminal(columns=200, monochrome=True)
 
 ```
@@ -101,7 +128,7 @@ Result:
 
 ## from_dalle()
 
-Creates an ```AsciiArt``` object with [DALL•E](https://openai.com/dall-e/), a deep learning model that can generate realistic images from a description in natural language. Requires a [DALL•E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module, as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
+Creates an ```AsciiArt``` object with [DALL•E](https://openai.com/dall-e/), a deep learning model that can generate realistic images from a description in natural language. Requires a [DALL•E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
 
 ```python
 from_dalle(
@@ -118,12 +145,11 @@ Parameters:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 import os
 
 api_key = os.environ.get('MY_DALLE_API_KEY')
-
-my_art = ascii_magic.from_dalle('A portrait of a cow with noble clothes, digital art', api_key)
+my_art = AsciiArt.from_dalle('A portrait of a cow with noble clothes, digital art', api_key)
 my_art.to_html_file('cow.html', columns=200)
 ```
 
@@ -146,12 +172,13 @@ Parameters:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
 try:
-    my_art = ascii_magic.from_url('https://source.unsplash.com/800x600?nature')
+    my_art = AsciiArt.from_url('https://source.unsplash.com/800x600?nature')
 except OSError as e:
     print(f'Could not load the image, server said: {e.code} {e.msg}')
+my_art.to_terminal()
 ```
 
 ## from_clipboard()
@@ -165,12 +192,13 @@ from_clipboard() -> AsciiArt
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
 try:
-    my_art = ascii_magic.from_clipboard()
+    my_art = AsciiArt.from_clipboard()
 except OSError:
     print('The clipboard does not contain an image')
+my_art.to_terminal()
 ```
 
 ## from_pillow_image()
@@ -188,22 +216,25 @@ Parameters:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 from PIL import Image
 
 img = Image.open('images/lion.jpg')
-my_art = ascii_magic.from_pillow_image(img)
+my_art = AsciiArt.from_pillow_image(img)
+my_art.to_terminal()
 ```
 
 
 # The AsciiArt object
 
-An ```AsciiArt``` object created by the functions explained above has the following methods: ```to_ascii()```, ```to_terminal()```, ```to_file()```, ```to_html()``` and ```to_html_file()```. These methods allow you to display the ASCII art in different ways.
+An ```AsciiArt``` object created as explained above has a collection of methods, such as ```to_ascii()```, that allows you to create and display ASCII art pieces. All of them return a string, and some have additional functionality, as described below.
 
 
-## AsciiArt.to_ascii()
+## to_ascii()
 
-Returns a string containing the art and, by default, control characters that allows most terminals (also known as shells) to display color.
+Returns a string containing ASCII art and, by default, control characters that allows most terminals (also known as shells) to display color.
+
+The module ```ascii_magic``` exposes two enums to handle color: ```Front``` and ```Back``` which allow you to select terminal-compatible colors.
 
 ```python
 AsciiArt.to_ascii(
@@ -211,8 +242,8 @@ AsciiArt.to_ascii(
     width_ratio: float = 2.2,
     char: Optional[str] = None,
     monochrome: bool = False,
-    back: Optional[Back] = None,
-    front: Optional[Front] = None
+    front: Optional[Front] = None,
+    back: Optional[Back] = None
 ) -> str
 ```
 
@@ -222,32 +253,32 @@ Parameters:
 - ```width_ratio (float, optional)```: ASCII characters are not squares, so this adjusts the width to height ratio during generation
 - ```char (str, optional)```: instead of using many different ASCII glyphs, you can use a single one, such as '#'
 - ```monochrome (bool, optional)```: if set to True, disables the usage of control characters that display color
-- ```back (enum, optional)```: sets the background color to one of:
-  - ```ascii_magic.Back.BLACK```
-  - ```ascii_magic.Back.RED```
-  - ```ascii_magic.Back.GREEN```
-  - ```ascii_magic.Back.YELLOW```
-  - ```ascii_magic.Back.BLUE```
-  - ```ascii_magic.Back.MAGENTA```
-  - ```ascii_magic.Back.CYAN```
-  - ```ascii_magic.Back.WHITE```
 - ```front (enum, optional)```: overrides the foreground color with one of:
-  - ```ascii_magic.Front.BLACK```
-  - ```ascii_magic.Front.RED```
-  - ```ascii_magic.Front.GREEN```
-  - ```ascii_magic.Front.YELLOW```
-  - ```ascii_magic.Front.BLUE```
-  - ```ascii_magic.Front.MAGENTA```
-  - ```ascii_magic.Front.CYAN```
-  - ```ascii_magic.Front.WHITE```
+  - ```Front.BLACK```
+  - ```Front.RED```
+  - ```Front.GREEN```
+  - ```Front.YELLOW```
+  - ```Front.BLUE```
+  - ```Front.MAGENTA```
+  - ```Front.CYAN```
+  - ```Front.WHITE```
+- ```back (enum, optional)```: sets the background color to one of:
+  - ```Back.BLACK```
+  - ```Back.RED```
+  - ```Back.GREEN```
+  - ```Back.YELLOW```
+  - ```Back.BLUE```
+  - ```Back.MAGENTA```
+  - ```Back.CYAN```
+  - ```Back.WHITE```
 
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt, Back
 
-my_art = ascii_magic.from_image('images/lion.jpg')
-my_output = my_art.to_ascii(columns=200, back=ascii_magic.Back.BLUE)
+my_art = AsciiArt.from_image('images/lion.jpg')
+my_output = my_art.to_ascii(columns=200, back=Back.BLUE)
 print(my_output)
 ```
 
@@ -256,11 +287,11 @@ Result:
 ![ASCII Magic TERMINAL mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_blue.png)
 
 
-## AsciiArt.to_terminal()
+## to_terminal()
 
 Identical to ```AsciiArt.to_ascii()```, but it also does a ```print()``` of the result, saving you one line of code ;)
 
-## AsciiArt.to_file()
+## to_file()
 
 Identical to ```AsciiArt.to_ascii()```, but it also saves the result to a text file.
 
@@ -277,15 +308,15 @@ Parameters:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
-my_art = ascii_magic.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('images/lion.jpg')
 my_art.to_file('lion.txt', monochrome=True)
 ```
 
-## AsciiArt.to_html()
+## to_html()
 
-Generates HTML markup of the ASCII art. Accepts the same parameters as ```AsciiArt.to_ascii()```, except ```back``` and ```front``` colors. By default the HTML ASCII art is generated with a 24-bit palette (16 million colors).
+Returns a string with ASCII art created as HTML markup. Accepts the same parameters as ```AsciiArt.to_ascii()```, except for ```back``` and ```front``` colors. By default the HTML ASCII art is generated with a 24-bit palette (16 million colors).
 
 ```python
 AsciiArt.to_html(
@@ -301,23 +332,18 @@ Parameters:
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
-my_art = ascii_magic.from_image('images/lion.jpg')
-my_html_markup = ascii_magic.to_html(columns=200)
+my_art = AsciiArt.from_image('images/lion.jpg')
+my_html_markup = my_art.to_html(columns=200)
 ```
 
-Result:
+## to_html_file()
 
-![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_html.png)
-
-
-## AsciiArt.to_html_file()
-
-Identical to ```AsciiArt.to_html()```, but it also saves the markup to a barebones HTML file inside a ```<pre>``` tag with a bunch of default CSS styles.
+Identical to ```AsciiArt.to_html()```, but it also saves the markup to a barebones HTML file inside a ```<pre>``` tag with a bunch of default CSS styles that you can easily open in your browser.
 
 ```python
-AsciiArt.to_html(
+AsciiArt.to_html_file(
     path: str,
     styles: str = '...',  # See description below
     additional_styles: str = '',
@@ -329,25 +355,29 @@ AsciiArt.to_html(
 Parameters:
 
 - ```path (str)```: the output file path
-- ```styles (str)```: a string with a bunch of CSS styles for the ```<pre>``` element, by default:
+- ```styles (str, optional)```: a string with a bunch of CSS styles for the ```<pre>``` element, by default:
   - display: inline-block;
   - border-width: 4px 6px;
   - border-color: black;
   - border-style: solid;
   - background-color: black;
   - font-size: 8px;
-- ```additional_styles (optional)```: use this to add your own CSS styles without removing the default ones
-- ```auto_open (optional)```: if True, ```webbrowser.open()``` will be called on the HTML file
+- ```additional_styles (str, optional)```: use this to add your own CSS styles without removing the default ones
+- ```auto_open (bool, optional)```: if True, the file will be opened with ```webbrowser.open()```
 
 
 Example:
 
 ```python
-import ascii_magic
+from ascii_magic import AsciiArt
 
-my_art = ascii_magic.from_image('images/lion.jpg')
-ascii_magic.to_html_file('lion.html', columns=200, additional_styles='background: #222;', auto_open=True)
+my_art = AsciiArt.from_image('images/lion.jpg')
+my_art.to_html_file('lion.html', columns=200, additional_styles='font-family: MonoLisa;')
 ```
+
+Result:
+
+![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_html.png)
 
 # Licence
 

@@ -14,6 +14,28 @@ from json import dumps
 __VERSION__ = 2.1
 
 
+class Front(Enum):
+    BLACK = colorama.ansi.AnsiFore.BLACK
+    RED = colorama.ansi.AnsiFore.RED
+    GREEN = colorama.ansi.AnsiFore.GREEN
+    YELLOW = colorama.ansi.AnsiFore.YELLOW
+    BLUE = colorama.ansi.AnsiFore.BLUE
+    MAGENTA = colorama.ansi.AnsiFore.MAGENTA
+    CYAN = colorama.ansi.AnsiFore.CYAN
+    WHITE = colorama.ansi.AnsiFore.WHITE
+
+
+class Back(Enum):
+    BLACK = colorama.ansi.AnsiBack.BLACK
+    RED = colorama.ansi.AnsiBack.RED
+    GREEN = colorama.ansi.AnsiBack.GREEN
+    YELLOW = colorama.ansi.AnsiBack.YELLOW
+    BLUE = colorama.ansi.AnsiBack.BLUE
+    MAGENTA = colorama.ansi.AnsiBack.MAGENTA
+    CYAN = colorama.ansi.AnsiBack.CYAN
+    WHITE = colorama.ansi.AnsiBack.WHITE
+
+
 class Modes(Enum):
     ASCII = 'ASCII'
     TERMINAL = 'TERMINAL'
@@ -32,8 +54,8 @@ class AsciiArt:
         width_ratio: float = 2.2,
         char: Optional[str] = None,
         monochrome: bool = False,
-        back: Optional[colorama.ansi.AnsiBack] = None,
-        front: Optional[colorama.ansi.AnsiFore] = None,
+        back: Optional[Back] = None,
+        front: Optional[Front] = None,
         debug: bool = False,
     ):
         art = self._img_to_art(
@@ -53,8 +75,8 @@ class AsciiArt:
         width_ratio: float = 2.2,
         char: Optional[str] = None,
         monochrome: bool = False,
-        back: Optional[colorama.ansi.AnsiBack] = None,
-        front: Optional[colorama.ansi.AnsiFore] = None,
+        back: Optional[Back] = None,
+        front: Optional[Front] = None,
         debug: bool = False,
     ):
         art = self._img_to_art(
@@ -66,7 +88,7 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
-        AsciiMagic.print_to_terminal(art)
+        self._print_to_terminal(art)
         return art
 
     def to_file(
@@ -76,8 +98,8 @@ class AsciiArt:
         width_ratio: float = 2.2,
         char: Optional[str] = None,
         monochrome: bool = False,
-        back: Optional[colorama.ansi.AnsiBack] = None,
-        front: Optional[colorama.ansi.AnsiFore] = None,
+        back: Optional[Back] = None,
+        front: Optional[Front] = None,
         debug: bool = False,
     ):
         art = self._img_to_art(
@@ -89,7 +111,7 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
-        AsciiMagic.save_to_file(path, art)
+        self._save_to_file(path, art)
         return art
 
     def to_html(
@@ -134,7 +156,7 @@ class AsciiArt:
             full_color=full_color,
             debug=debug,
         )
-        AsciiMagic.save_to_html_file(
+        self._save_to_html_file(
             path,
             art,
             styles=styles,
@@ -151,8 +173,8 @@ class AsciiArt:
         mode: Modes = Modes.TERMINAL,
         monochrome: bool = False,
         full_color: bool = True,
-        back: Optional[colorama.ansi.AnsiBack] = None,
-        front: Optional[colorama.ansi.AnsiFore] = None,
+        back: Optional[Back] = None,
+        front: Optional[Front] = None,
         debug: bool = False,
     ) -> str:
         if mode == Modes.TERMINAL:
@@ -242,7 +264,7 @@ class AsciiArt:
         srgb: list,
         brightness: float,
         mode: Modes = Modes.TERMINAL,
-        front: Optional[colorama.ansi.AnsiFore] = None,
+        front: Optional[Front] = None,
     ) -> str:
         color = self._convert_color(srgb, brightness)
 
@@ -266,45 +288,18 @@ class AsciiArt:
         elif mode == Modes.HTML_MONOCHROME:
             return f'<span style="color: white">{char}</span>'
 
+    @staticmethod
+    def _save_to_file(path: str, art: str) -> None:
+        with open(path, 'w') as f:
+            f.write(art)
 
-class AsciiMagic:
-    @classmethod
-    def from_url(cls, url: str) -> AsciiArt:
-        img = cls._load_url(url)
-        return AsciiArt(img)
-
-    @classmethod
-    def from_image(cls, img: Image.Image) -> AsciiArt:
-        return AsciiArt(img)
-
-    @classmethod
-    def from_image_file(cls, path: str) -> AsciiArt:
-        img = cls._load_file(path)
-        return AsciiArt(img)
-
-    @classmethod
-    def from_clipboard(cls) -> AsciiArt:
-        img = cls._load_clipboard()
-        return AsciiArt(img)
-
-    @classmethod
-    def from_dalle(cls, prompt: str, api_key: Optional[str] = None, debug: bool = False) -> AsciiArt:
-        img = cls._load_dalle(prompt, api_key, debug)
-        return AsciiArt(img)
-
-    @classmethod
-    def quick_test(cls):
-        img = cls.from_url('https://source.unsplash.com/800x600?landscapes')
-        img.to_terminal()
-
-    @classmethod
-    def print_to_terminal(cls, art: str):
+    @staticmethod
+    def _print_to_terminal(art: str):
         colorama.init()
         print(art)
 
-    @classmethod
-    def save_to_html_file(
-        cls,
+    @staticmethod
+    def _save_to_html_file(
         path: str,
         art: str,
         styles: str = DEFAULT_STYLES,
@@ -326,9 +321,33 @@ class AsciiMagic:
             webbrowser.open(path)
 
     @classmethod
-    def save_to_file(cls, path: str, art: str) -> None:
-        with open(path, 'w') as f:
-            f.write(art)
+    def quick_test(cls):
+        img = cls.from_url('https://source.unsplash.com/800x600?landscapes')
+        img.to_terminal()
+
+    @classmethod
+    def from_url(cls, url: str) -> 'AsciiArt':
+        img = cls._load_url(url)
+        return AsciiArt(img)
+
+    @classmethod
+    def from_image(cls, path: str) -> 'AsciiArt':
+        img = cls._load_file(path)
+        return AsciiArt(img)
+
+    @classmethod
+    def from_pillow_image(cls, img: Image.Image) -> 'AsciiArt':
+        return AsciiArt(img)
+
+    @classmethod
+    def from_clipboard(cls) -> 'AsciiArt':
+        img = cls._load_clipboard()
+        return AsciiArt(img)
+
+    @classmethod
+    def from_dalle(cls, prompt: str, api_key: Optional[str] = None, debug: bool = False) -> 'AsciiArt':
+        img = cls._load_dalle(prompt, api_key=api_key, debug=debug)
+        return AsciiArt(img)
 
     @classmethod
     def _load_url(cls, url: str) -> Image.Image:
