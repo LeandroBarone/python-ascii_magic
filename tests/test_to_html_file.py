@@ -1,4 +1,16 @@
-from context import ascii_magic
+import ascii_magic
 
-output = ascii_magic.from_image_file('kid.jpg', columns=200, mode=ascii_magic.Modes.HTML)
-ascii_magic.to_html_file('kid.html', output)
+
+def test_to_html_file():
+    my_art = ascii_magic.from_image_file('kid.jpg')
+    my_art.to_html_file('kid.html')
+
+
+def test_to_html_file_terminal_mode():
+    my_art = ascii_magic.from_image_file('kid.jpg')
+    my_art.to_html_file('kid_terminal.html', full_color=False)
+
+
+def test_to_html_file_monochrome_mode():
+    my_art = ascii_magic.from_image_file('kid.jpg')
+    my_art.to_html_file('kid_monochrome.html', monochrome=True)

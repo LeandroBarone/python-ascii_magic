@@ -1,4 +1,7 @@
-from context import ascii_magic
+import ascii_magic
 
-output = ascii_magic.from_clipboard(columns=100, width_ratio=2, char='@')
-ascii_magic.to_terminal(output)
+
+def test_from_clipboard():
+    # This test requires an image in the clipboard
+    my_art = ascii_magic.from_clipboard()
+    my_art.to_terminal()
