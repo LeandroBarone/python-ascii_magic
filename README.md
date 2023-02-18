@@ -6,17 +6,20 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
-### v2.1
-- DALL•E support
+### v2.1 - Feb 2023
+- DALL•E support: from_dalle()
 
-### v2.0
-- Complete rewrite, only supports OOP, no longer compatible with 1.x
+### v2.0 - Feb 2023
+- Complete rewrite, full OOP, no longer compatible with 1.x
 - Added support for foreground color
-- Test suite compatible with PyTest
+- to_html()
 
-### v1.6
+### v1.6 - Sep 2021
 - OOP functionality
 - to_file()
+
+### v1.5 - Nov 2020
+- First public release
 
 # How to install
 
@@ -27,7 +30,7 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 ```python
 from ascii_magic import AsciiArt
 
-my_art = AsciiArt.from_image('images/moon.jpg')
+my_art = AsciiArt.from_image('moon.jpg')
 my_art.to_terminal()
 ```
 
@@ -52,6 +55,7 @@ from ascii_magic import AsciiArt, from_image
 # This:
 my_art = AsciiArt.from_image('lion.jpg')
 my_art.to_terminal()
+
 # Does the same as this:
 my_art = from_image('lion.jpg')
 my_art.to_terminal()
@@ -90,7 +94,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt, Back
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_art.to_terminal(columns=200, back=Back.BLUE)
 ```
 
@@ -103,7 +107,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_art.to_html_file('ascii_art.html', columns=200, width_ratio=2)
 ```
 
@@ -116,7 +120,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_art.to_terminal(columns=200, monochrome=True)
 
 ```
@@ -219,7 +223,7 @@ Example:
 from ascii_magic import AsciiArt
 from PIL import Image
 
-img = Image.open('images/lion.jpg')
+img = Image.open('lion.jpg')
 my_art = AsciiArt.from_pillow_image(img)
 my_art.to_terminal()
 ```
@@ -277,7 +281,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt, Back
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_output = my_art.to_ascii(columns=200, back=Back.BLUE)
 print(my_output)
 ```
@@ -310,7 +314,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_art.to_file('lion.txt', monochrome=True)
 ```
 
@@ -334,7 +338,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_html_markup = my_art.to_html(columns=200)
 ```
 
@@ -371,7 +375,7 @@ Example:
 ```python
 from ascii_magic import AsciiArt
 
-my_art = AsciiArt.from_image('images/lion.jpg')
+my_art = AsciiArt.from_image('lion.jpg')
 my_art.to_html_file('lion.html', columns=200, additional_styles='font-family: MonoLisa;')
 ```
 
