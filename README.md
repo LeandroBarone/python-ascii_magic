@@ -156,7 +156,7 @@ except OSError as e:
 
 ## from_clipboard()
 
-Creates an ```AsciiArt``` object from the contents of the clipboard. Raises a ```OSError``` if the clipboard doesn't contain an image. Requires [PyGObject](https://pygobject.readthedocs.io/en/latest/getting_started.html) under Linux.
+Creates an ```AsciiArt``` object from the contents of the clipboard. Raises an ```OSError``` if the clipboard doesn't contain an image. Requires [PyGObject](https://pygobject.readthedocs.io/en/latest/getting_started.html) under Linux.
 
 ```python
 from_clipboard() -> AsciiArt
@@ -285,7 +285,7 @@ my_art.to_file('lion.txt', monochrome=True)
 
 ## AsciiArt.to_html()
 
-Generates HTML markup of the ASCII art. Uses the same parameters as ```AsciiArt.to_ascii()```, except ```back``` and ```front``` colors. By default the HTML ASCII art is generated with a 16-bit palette (16 million colors).
+Generates HTML markup of the ASCII art. Accepts the same parameters as ```AsciiArt.to_ascii()```, except ```back``` and ```front``` colors. By default the HTML ASCII art is generated with a 24-bit palette (16 million colors).
 
 ```python
 AsciiArt.to_html(
