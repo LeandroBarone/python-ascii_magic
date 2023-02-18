@@ -1,3 +1,5 @@
-from context import ascii_magic
+import ascii_magic
 
-ascii_magic.quick_test()
+
+def test_quick_test():
+    ascii_magic.quick_test()
