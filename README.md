@@ -150,9 +150,8 @@ Example:
 
 ```python
 from ascii_magic import AsciiArt
-import os
 
-api_key = os.environ.get('MY_DALLE_API_KEY')
+api_key = 'SK-AFAKEDALLEAPIKEY'
 my_art = AsciiArt.from_dalle('A portrait of a cow with noble clothes, digital art', api_key)
 my_art.to_html_file('cow.html', columns=200)
 ```
@@ -244,10 +243,10 @@ The module ```ascii_magic``` exposes two enums to handle color: ```Front``` and 
 AsciiArt.to_ascii(
     columns: int = 120,
     width_ratio: float = 2.2,
-    char: Optional[str] = None,
     monochrome: bool = False,
-    front: Optional[Front] = None,
-    back: Optional[Back] = None
+    char: Optional[str],
+    front: Optional[Front],
+    back: Optional[Back]
 ) -> str
 ```
 
@@ -255,8 +254,8 @@ Parameters:
 
 - ```columns (int, optional)```: the number of characters per row, more columns = wider art
 - ```width_ratio (float, optional)```: ASCII characters are not squares, so this adjusts the width to height ratio during generation
-- ```char (str, optional)```: instead of using many different ASCII glyphs, you can use a single one, such as '#'
 - ```monochrome (bool, optional)```: if set to True, disables the usage of control characters that display color
+- ```char (str, optional)```: instead of using many different ASCII glyphs, you can use a single one, such as '#'
 - ```front (enum, optional)```: overrides the foreground color with one of:
   - ```Front.BLACK```
   - ```Front.RED```
