@@ -6,6 +6,9 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.2 - Feb 2023
+- Stable Diffusion support: from_stable_diffusion()
+
 ### v2.1 - Feb 2023
 - DALL•E support: from_dalle()
 
@@ -132,7 +135,7 @@ Result:
 
 ## from_dalle()
 
-Creates an ```AsciiArt``` object with [DALL•E](https://openai.com/dall-e/), a deep learning model that can generate realistic images from a description in natural language. Requires a [DALL•E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
+Creates an ```AsciiArt``` object with [DALL•E](https://openai.com/dall-e/), a machine learning model that can generate realistic images from a description in natural language. Requires a [DALL•E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
 
 ```python
 from_dalle(
@@ -152,13 +155,46 @@ Example:
 from ascii_magic import AsciiArt
 
 api_key = 'SK-AFAKEDALLEAPIKEY'
-my_art = AsciiArt.from_dalle('A portrait of a cow with noble clothes, digital art', api_key)
-my_art.to_html_file('cow.html', columns=200)
+my_art = AsciiArt.from_dalle('A portrait of a cow with noble clothes', api_key)
+my_art.to_html_file('cow_dalle.html', columns=200)
 ```
 
 Result:
 
 ![ASCII Magic DALL•E example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_dalle.png)
+## from_stable_diffusion()
+
+Creates an ```AsciiArt``` object with [Stable Diffusion](https://stability.ai/), a machine learning model that can generate realistic images from a description in natural language. Requires a [Stable Diffusion API key](https://platform.stability.ai/).
+
+```python
+from_stable_diffusion(
+    prompt: str,
+    api_key: str,
+    steps: int = 30,
+    engine: Optional[str],
+) -> AsciiArt
+```
+
+Parameters:
+
+- ```prompt (str)```: a description of an image in natural language
+- ```api_key (str, optional)```: a Stable Diffusion API key
+- ```steps (int, optional)```: amount of inference steps performed (see Stable Diffusion documentation)
+- ```engine (str, optional)```: set the engine to use for generation (see Stable Diffusion documentation)
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+api_key = 'SK-AFAKESTABLEDIFFUSIONAPIKEY'
+my_art = AsciiArt.from_stable_diffusion('A portrait of a cow with noble clothes', api_key)
+my_art.to_html_file('cow_stable_diffusion.html', columns=200)
+```
+
+Result:
+
+![ASCII Magic Stable Diffusion example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_stable_diffusion.png)
 
 ## from_url()
 
