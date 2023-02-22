@@ -27,3 +27,13 @@ def from_clipboard() -> AsciiArt:
 
 def from_dalle(prompt: str, api_key: Optional[str] = None, **kwargs) -> AsciiArt:
     return AsciiArt.from_dalle(prompt, api_key, **kwargs)
+
+
+def from_stable_diffusion(
+    prompt: str,
+    api_key: str,
+    engine: Optional[str] = None,
+    steps: int = 30,
+    **kwargs
+) -> AsciiArt:
+    return AsciiArt.from_stable_diffusion(prompt, api_key, engine=engine, steps=steps, **kwargs)

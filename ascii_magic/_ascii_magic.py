@@ -5,6 +5,7 @@ import webbrowser
 import urllib.request
 from PIL import Image
 
+import io
 from typing import Optional
 from enum import Enum
 from time import time
@@ -350,6 +351,18 @@ class AsciiArt:
         return AsciiArt(img)
 
     @classmethod
+    def from_stable_diffusion(
+        cls,
+        prompt: str,
+        api_key: str,
+        engine: Optional[str] = None,
+        steps: int = 30,
+        debug: bool = False,
+    ) -> 'AsciiArt':
+        img = cls._load_stable_diffusion(prompt, api_key=api_key, engine=engine, steps=steps, debug=debug)
+        return AsciiArt(img)
+
+    @classmethod
     def _load_url(cls, url: str) -> Image.Image:
         with urllib.request.urlopen(url) as response:
             return Image.open(response)
@@ -410,7 +423,7 @@ class AsciiArt:
         try:
             import openai
         except ModuleNotFoundError:
-            print('Accessing DALL-E requires the openai module')
+            print('Using DALL-E requires the openai module')
             print('pip install openai')
             exit()
 
@@ -427,8 +440,53 @@ class AsciiArt:
         )
 
         if debug:
-            with open(str(int(time())) + '.json', 'w') as f:
+            with open(str(int(time())) + '_dalle.json', 'w') as f:
                 f.write(dumps(response))
 
         url = response['data'][0]['url']  # type: ignore
         return cls._load_url(url)
+
+    @classmethod
+    def _load_stable_diffusion(
+        cls,
+        prompt: str,
+        api_key: str,
+        engine: Optional[str] = None,
+        steps: int = 30,
+        debug: bool = False,
+    ) -> Image.Image:
+        try:
+            from stability_sdk import client
+            import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
+        except ModuleNotFoundError:
+            print('Using Stable Diffusion requires the stability_sdk module')
+            print('pip install stability_sdk')
+            exit()
+
+        if not engine:
+            engine = 'stable-diffusion-512-v2-1'
+
+        stability_api = client.StabilityInference(
+            key=api_key,
+            verbose=debug,
+            engine=engine,
+        )
+
+        response = stability_api.generate(
+            prompt=prompt,
+            steps=steps,
+            width=512,
+            height=512,
+        )
+
+        for answer in response:
+            for artifact in answer.artifacts:
+                if artifact.finish_reason == generation.FILTER:
+                    raise OSError('Your prompt tirggered Stable Diffusion\'s safety filter.')
+                if artifact.type == generation.ARTIFACT_IMAGE:
+                    img = Image.open(io.BytesIO(artifact.binary))
+                    if debug:
+                        img.save(str(int(time()))+ "_stable_diffusion.png")
+                    return img
+
+        raise OSError('No artifacts returned')
