@@ -25,8 +25,12 @@ def from_clipboard() -> AsciiArt:
     return AsciiArt.from_clipboard()
 
 
-def from_dalle(prompt: str, api_key: Optional[str] = None, **kwargs) -> AsciiArt:
-    return AsciiArt.from_dalle(prompt, api_key, **kwargs)
+def from_dalle(
+    prompt: str,
+    api_key: Optional[str] = None,
+    debug: bool = False,
+) -> AsciiArt:
+    return AsciiArt.from_dalle(prompt, api_key, debug=debug)
 
 
 def from_stable_diffusion(
@@ -34,6 +38,13 @@ def from_stable_diffusion(
     api_key: str,
     engine: Optional[str] = None,
     steps: int = 30,
-    **kwargs
+    debug: bool = False,
 ) -> AsciiArt:
-    return AsciiArt.from_stable_diffusion(prompt, api_key, engine=engine, steps=steps, **kwargs)
+    return AsciiArt.from_stable_diffusion(prompt, api_key, engine=engine, steps=steps, debug=debug)
+
+
+def from_craiyon(
+    prompt: str,
+    debug: bool = False,
+) -> AsciiArt:
+    return AsciiArt.from_craiyon(prompt, debug=debug)

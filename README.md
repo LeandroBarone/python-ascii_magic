@@ -6,11 +6,14 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.3 - Feb 2023
+- Craiyon support: from_craiyon()
+
 ### v2.2 - Feb 2023
 - Stable Diffusion support: from_stable_diffusion()
 
 ### v2.1 - Feb 2023
-- DALL•E support: from_dalle()
+- DALL-E support: from_dalle()
 
 ### v2.0 - Feb 2023
 - Complete rewrite, full OOP, no longer compatible with 1.x
@@ -61,6 +64,19 @@ my_art.to_terminal()
 
 # Does the same as this:
 my_art = from_image('lion.jpg')
+my_art.to_terminal()
+```
+
+This class is essentially a wrapper for a Pillow image. The property ```AsciiArt.image``` exposes the underlying Pillow object so you can manipulate it directly.
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+from PIL import ImageEnhance
+
+my_art = AsciiArt.from_image('lion.jpg')
+my_art.image = ImageEnhance.Brightness(my_art.image).enhance(0.2)
 my_art.to_terminal()
 ```
 
@@ -133,9 +149,34 @@ Result:
 ![ASCII Magic ASCII mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
 
 
+## from_craiyon()
+
+Creates an ```AsciiArt``` object with [Craiyon](https://www.craiyon.com/), previously known as DALL-E Mini, a machine learning model that can generate realistic images from a description in natural language.
+
+```python
+from_craiyon(prompt: str) -> AsciiArt
+```
+
+Parameters:
+
+- ```prompt (str)```: a description of an image in natural language
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+my_art = AsciiArt.from_craiyon('A portrait of a cow with noble clothes')
+my_art.to_html_file('cow_craiyon.html', columns=200)
+```
+
+Result:
+
+![ASCII Magic Craiyon example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_craiyon.png)
+
 ## from_dalle()
 
-Creates an ```AsciiArt``` object with [DALL•E](https://openai.com/dall-e/), a machine learning model that can generate realistic images from a description in natural language. Requires a [DALL•E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
+Creates an ```AsciiArt``` object with [DALL-E](https://openai.com/dall-e/), a machine learning model that can generate realistic images from a description in natural language. Requires a [DALL-E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
 
 ```python
 from_dalle(
@@ -147,7 +188,7 @@ from_dalle(
 Parameters:
 
 - ```prompt (str)```: a description of an image in natural language
-- ```api_key (str, optional)```: a DALL•E API key
+- ```api_key (str, optional)```: a DALL-E API key
 
 Example:
 
@@ -161,7 +202,7 @@ my_art.to_html_file('cow_dalle.html', columns=200)
 
 Result:
 
-![ASCII Magic DALL•E example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_dalle.png)
+![ASCII Magic DALL-E example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_dalle.png)
 ## from_stable_diffusion()
 
 Creates an ```AsciiArt``` object with [Stable Diffusion](https://stability.ai/), a machine learning model that can generate realistic images from a description in natural language. Requires a [Stable Diffusion API key](https://platform.stability.ai/).
