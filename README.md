@@ -153,6 +153,8 @@ Result:
 
 Creates an ```AsciiArt``` object with [Craiyon](https://www.craiyon.com/), previously known as DALL-E Mini, a machine learning model that can generate realistic images from a description in natural language.
 
+Keep in mind that this process can take one minute or more!
+
 ```python
 from_craiyon(prompt: str) -> AsciiArt
 ```
