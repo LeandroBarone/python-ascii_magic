@@ -49,6 +49,14 @@ class AsciiArt:
     def __init__(self, image: Image.Image):
         self._image = image
 
+    @property
+    def image(self) -> Image.Image:
+        return self._image
+
+    @image.setter
+    def image(self, value):
+        self._image = value
+
     def to_ascii(
         self,
         columns: int = 120,
@@ -143,10 +151,10 @@ class AsciiArt:
         char: Optional[str] = None,
         monochrome: bool = False,
         full_color: bool = True,
-        debug: bool = False,
         styles: str = DEFAULT_STYLES,
         additional_styles: str = '',
         auto_open: bool = False,
+        debug: bool = False,
     ):
         art = self._img_to_art(
             mode=Modes.HTML,
@@ -346,7 +354,12 @@ class AsciiArt:
         return AsciiArt(img)
 
     @classmethod
-    def from_dalle(cls, prompt: str, api_key: Optional[str] = None, debug: bool = False) -> 'AsciiArt':
+    def from_dalle(
+        cls,
+        prompt: str,
+        api_key: Optional[str] = None,
+        debug: bool = False
+    ) -> 'AsciiArt':
         img = cls._load_dalle(prompt, api_key=api_key, debug=debug)
         return AsciiArt(img)
 
@@ -363,7 +376,17 @@ class AsciiArt:
         return AsciiArt(img)
 
     @classmethod
+    def from_craiyon(
+        cls,
+        prompt: str,
+        debug: bool = False,
+    ) -> 'AsciiArt':
+        img = cls._load_craiyon(prompt, debug=debug)
+        return AsciiArt(img)
+
+    @classmethod
     def _load_url(cls, url: str) -> Image.Image:
+
         with urllib.request.urlopen(url) as response:
             return Image.open(response)
 
@@ -464,7 +487,7 @@ class AsciiArt:
             exit()
 
         if not engine:
-            engine = 'stable-diffusion-512-v2-1'
+            engine = 'stable-diffusion-256-v2-1'
 
         stability_api = client.StabilityInference(
             key=api_key,
@@ -475,18 +498,55 @@ class AsciiArt:
         response = stability_api.generate(
             prompt=prompt,
             steps=steps,
-            width=512,
-            height=512,
+            width=256,
+            height=256,
         )
 
         for answer in response:
             for artifact in answer.artifacts:
                 if artifact.finish_reason == generation.FILTER:
-                    raise OSError('Your prompt tirggered Stable Diffusion\'s safety filter.')
+                    raise OSError('Your prompt triggered Stable Diffusion\'s safety filter.')
                 if artifact.type == generation.ARTIFACT_IMAGE:
                     img = Image.open(io.BytesIO(artifact.binary))
                     if debug:
-                        img.save(str(int(time()))+ "_stable_diffusion.png")
+                        img.save(str(int(time())) + "_stable_diffusion.png")
                     return img
 
         raise OSError('No artifacts returned')
+
+    @classmethod
+    def _load_craiyon(cls, prompt: str, debug: bool = False) -> Image.Image:
+        try:
+            import requests
+        except ModuleNotFoundError:
+            print('Using Craiyon requires the module requests')
+            print('pip install requests')
+            exit()
+
+        headers = {
+            'accept': 'application/json',
+        }
+
+        payload = {
+            'prompt': prompt,
+            'token': None,
+            'version': '35s5hfwn9n78gb06',
+        }
+
+        response = requests.post('https://api.craiyon.com/draw', json=payload, headers=headers)
+
+        if debug:
+            with open(str(int(time())) + '_craiyon.json', 'w') as f:
+                f.write(response.text)
+
+        images = response.json().get('images')
+        image_url = 'https://img.craiyon.com/' + str(images[0])
+
+        response = requests.get(image_url, stream=True)
+
+        img = Image.open(response.raw)
+
+        if debug:
+            img.save(str(int(time())) + '_craiyon.png')
+
+        return img
