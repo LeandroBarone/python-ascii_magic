@@ -218,6 +218,7 @@ class AsciiArt:
             grayscale_img.save('grayscale.jpg')
 
         lines = []
+        previousColor = ''
         for h in range(img_h):
             line = ''
 
@@ -231,8 +232,9 @@ class AsciiArt:
 
                 srgb = [(v/255.0)**2.2 for v in pixel]
                 char = chars[int(brightness * (len(chars) - 1))]
-                line += self._build_char(char, srgb, brightness, mode, front)
-
+                coloredChar = self._build_char(char, srgb, brightness, previousColor, mode, front)
+                line += coloredChar
+                previousColor = coloredChar[0:-1]
             if mode == Modes.TERMINAL and front:
                 line = str(front) + line + colorama.Fore.RESET
             if mode == Modes.TERMINAL and back:
@@ -272,6 +274,7 @@ class AsciiArt:
         char: str,
         srgb: list,
         brightness: float,
+        previousColor: str,
         mode: Modes = Modes.TERMINAL,
         front: Optional[Front] = None,
     ) -> str:
@@ -281,6 +284,8 @@ class AsciiArt:
             if front:
                 return char  # Front color will be set per-line
             else:
+                if color['term'] == previousColor:
+                    return char
                 return color['term'] + char
 
         elif mode == Modes.ASCII:
