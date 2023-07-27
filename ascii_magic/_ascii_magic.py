@@ -234,7 +234,8 @@ class AsciiArt:
                 char = chars[int(brightness * (len(chars) - 1))]
                 coloredChar = self._build_char(char, srgb, brightness, previousColor, mode, front)
                 line += coloredChar
-                previousColor = coloredChar[0:-1]
+                if len(coloredChar) > 1:
+                    previousColor = coloredChar[0:-1]
             if mode == Modes.TERMINAL and front:
                 line = str(front) + line + colorama.Fore.RESET
             if mode == Modes.TERMINAL and back:
