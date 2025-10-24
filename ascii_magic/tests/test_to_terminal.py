@@ -11,6 +11,11 @@ def test_red_front():
     my_art.to_terminal(front=Front.RED)
 
 
-def no_color():
+def test_monochrome():
     my_art = AsciiArt.from_image('lion.jpg')
     my_art.to_terminal(monochrome=True)
+
+
+def test_small():
+    my_art = AsciiArt.from_image('lion.jpg')
+    my_art.to_terminal(columns=50)

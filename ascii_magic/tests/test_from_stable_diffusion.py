@@ -5,7 +5,7 @@ import pytest
 import os
 
 
-def test_from_dalle():
+def test_from_stable_diffusion():
     api_key = os.environ.get('MY_STABLE_DIFFUSION_API_KEY')
 
     if not api_key:

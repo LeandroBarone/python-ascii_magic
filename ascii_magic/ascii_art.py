@@ -1,51 +1,19 @@
-from ascii_magic.constants import PALETTE, CHARS_BY_DENSITY, DEFAULT_STYLES
+from ascii_magic.constants import Front, Back, Modes, CHARS_BY_DENSITY, DEFAULT_STYLES, PALETTE
+from ascii_magic.ascii_art_font import AsciiArtFont
 
-import colorama
 import webbrowser
 import urllib.request
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import io
-from typing import Optional
-from enum import Enum
+from typing import Optional, Union, Literal
 from time import time
 from json import dumps
 
 
-__VERSION__ = 2.1
-
-
-class Front(Enum):
-    BLACK = colorama.ansi.AnsiFore.BLACK
-    RED = colorama.ansi.AnsiFore.RED
-    GREEN = colorama.ansi.AnsiFore.GREEN
-    YELLOW = colorama.ansi.AnsiFore.YELLOW
-    BLUE = colorama.ansi.AnsiFore.BLUE
-    MAGENTA = colorama.ansi.AnsiFore.MAGENTA
-    CYAN = colorama.ansi.AnsiFore.CYAN
-    WHITE = colorama.ansi.AnsiFore.WHITE
-
-
-class Back(Enum):
-    BLACK = colorama.ansi.AnsiBack.BLACK
-    RED = colorama.ansi.AnsiBack.RED
-    GREEN = colorama.ansi.AnsiBack.GREEN
-    YELLOW = colorama.ansi.AnsiBack.YELLOW
-    BLUE = colorama.ansi.AnsiBack.BLUE
-    MAGENTA = colorama.ansi.AnsiBack.MAGENTA
-    CYAN = colorama.ansi.AnsiBack.CYAN
-    WHITE = colorama.ansi.AnsiBack.WHITE
-
-
-class Modes(Enum):
-    ASCII = 'ASCII'
-    TERMINAL = 'TERMINAL'
-    HTML = 'HTML'
-    HTML_TERMINAL = 'HTML_TERMINAL'
-    HTML_MONOCHROME = 'HTML_MONOCHROME'
-
-
 class AsciiArt:
+    __VERSION__ = 2.4
+
     def __init__(self, image: Image.Image):
         self._image = image
 
@@ -71,6 +39,7 @@ class AsciiArt:
             columns=columns,
             width_ratio=width_ratio,
             char=char,
+            mode=Modes.ASCII,
             monochrome=monochrome,
             back=back,
             front=front,
@@ -97,7 +66,7 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
-        self._print_to_terminal(art)
+        print(art)
         return art
 
     def to_file(
@@ -123,13 +92,65 @@ class AsciiArt:
         self._save_to_file(path, art)
         return art
 
+    def to_image_file(
+        self,
+        path: str,
+        width: Union[int, Literal['auto']] = 'auto',
+        height: Union[int, Literal['auto']] = 'auto',
+        border_thickness: int = 2,
+        file_type: Literal['PNG', 'JPG', 'GIF', 'WEBP'] = 'PNG',
+        font: str = 'Courier Prime.ttf',
+        columns: int = 120,
+        width_ratio: Union[float, Literal['auto']] = 'auto',
+        char: Optional[str] = None,
+        monochrome: bool = False,
+        full_color: bool = False,
+        back: Optional[Union[Back, str]] = None,
+        front: Optional[Union[Front, str]] = None,
+        debug: bool = False,
+    ):
+        try:
+            font = AsciiArtFont(font)
+        except FileNotFoundError:
+            raise FileNotFoundError(f'Font {font} not found')
+
+        if width_ratio == 'auto':
+            width_ratio = font.get_ratio()
+
+        art = self._img_to_art(
+            mode=Modes.OBJECT,
+            columns=columns,
+            width_ratio=width_ratio,
+            char=char,
+            monochrome=monochrome,
+            full_color=full_color,
+            back=back,
+            front=front,
+            debug=debug,
+        )
+
+        self._save_to_image_file(
+            path,
+            art,
+            font=font,
+            width=width,
+            height=height,
+            border_thickness=border_thickness,
+            file_type=file_type,
+            monochrome=monochrome,
+            full_color=full_color,
+            back=back,
+            front=front,
+        )
+        return art
+
     def to_html(
         self,
         columns: int = 120,
         width_ratio: float = 2.2,
         char: Optional[str] = None,
         monochrome: bool = False,
-        full_color: bool = True,
+        full_color: bool = False,
         debug: bool = False,
     ):
         art = self._img_to_art(
@@ -174,6 +195,29 @@ class AsciiArt:
         )
         return art
 
+    def to_character_list(
+        self,
+        columns: int = 120,
+        width_ratio: float = 2.2,
+        char: Optional[str] = None,
+        monochrome: bool = False,
+        full_color: bool = False,
+        back: Optional[Back] = None,
+        front: Optional[Front] = None,
+        debug: bool = False,
+    ) -> list[list[dict]]:
+        return self._img_to_art(
+            mode=Modes.OBJECT,
+            columns=columns,
+            width_ratio=width_ratio,
+            char=char,
+            monochrome=monochrome,
+            full_color=full_color,
+            back=back,
+            front=front,
+            debug=debug,
+        )
+
     def _img_to_art(
         self,
         columns: int = 120,
@@ -181,127 +225,165 @@ class AsciiArt:
         char: Optional[str] = None,
         mode: Modes = Modes.TERMINAL,
         monochrome: bool = False,
-        full_color: bool = True,
+        full_color: bool = False,
         back: Optional[Back] = None,
         front: Optional[Front] = None,
         debug: bool = False,
     ) -> str:
-        if mode == Modes.TERMINAL:
-            if monochrome:
-                mode = Modes.ASCII
+        if monochrome and full_color:
+            full_color = False
+
+        if mode == Modes.TERMINAL and monochrome:
+            mode = Modes.ASCII
 
         if mode == Modes.HTML:
-            if back or front:
-                raise ValueError('Back or front colors not supported for HTML files')
-
             if monochrome:
                 mode = Modes.HTML_MONOCHROME
-            if not monochrome and not full_color:
+            elif full_color:
+                mode = Modes.HTML_FULL_COLOR
+            else:
                 mode = Modes.HTML_TERMINAL
 
         if mode not in Modes:
             raise ValueError('Unknown output mode ' + str(mode))
 
         img_w, img_h = self._image.size
-        scalar = img_w*width_ratio / columns
-        img_w = int(img_w*width_ratio / scalar)
+        scalar = img_w * width_ratio / columns
+        img_w = int(img_w * width_ratio / scalar)
         img_h = int(img_h / scalar)
         rgb_img = self._image.resize((img_w, img_h))
         color_palette = self._image.getpalette()
 
         grayscale_img = rgb_img.convert("L")
 
-        chars = [char] if char else CHARS_BY_DENSITY
+        chars = char if char else CHARS_BY_DENSITY
 
         if debug:
             rgb_img.save('rgb.jpg')
             grayscale_img.save('grayscale.jpg')
 
         lines = []
-        previousColor = ''
         for h in range(img_h):
-            line = ''
-
+            line = []
             for w in range(img_w):
                 # get brightness value
                 brightness = grayscale_img.getpixel((w, h)) / 255
                 pixel = rgb_img.getpixel((w, h))
+
                 # getpixel() may return an int, instead of tuple of ints, if the source img is a PNG with a transparency layer
                 if isinstance(pixel, int):
-                    pixel = (pixel, pixel, 255) if color_palette is None else tuple(color_palette[pixel*3:pixel*3 + 3])
+                    pixel = (pixel, pixel, 255) if color_palette is None else tuple(color_palette[pixel * 3:pixel * 3 + 3])
 
-                srgb = [(v/255.0)**2.2 for v in pixel]
+                rgb = [(v / 255.0)**2.2 for v in pixel]
                 char = chars[int(brightness * (len(chars) - 1))]
-                coloredChar = self._build_char(char, srgb, brightness, previousColor, mode, front)
-                line += coloredChar
-                if len(coloredChar) > 1:
-                    previousColor = coloredChar[0:-1]
-            if mode == Modes.TERMINAL and front:
-                line = str(front) + line + colorama.Fore.RESET
-            if mode == Modes.TERMINAL and back:
-                line = str(back) + line + colorama.Back.RESET
+                character = self.get_color_data(char, rgb, brightness)
+
+                line.append(character)
             lines.append(line)
 
-        if mode == Modes.TERMINAL:
-            return '\n'.join(lines) + colorama.Fore.RESET
-        elif mode == Modes.ASCII:
-            return '\n'.join(lines)
-        else:  # HTML modes
-            return '<br />'.join(lines)
+        if mode == Modes.ASCII:
+            art = ''
+            for line in lines:
+                for character in line:
+                    art += character['character']
+                art += '\n'
+            return art
 
-    def _convert_color(self, rgb: list, brightness: float) -> dict:
+        if mode == Modes.TERMINAL:
+            art = ''
+            for line in lines:
+                if back:
+                    art += self.cc(back)
+
+                previous_color = None
+                for character in line:
+                    current_color = self.cc(front) if front else character['terminal-color']
+                    if current_color == previous_color:
+                        art += character['character']
+                    else:
+                        previous_color = current_color
+                        art += current_color + character['character']
+
+                if back:
+                    art += self.cc(Back.RESET)
+
+                art += self.cc(Front.RESET)
+                art += '\n'
+            return art
+
+        if mode == Modes.OBJECT:
+            art = []
+            for line in lines:
+                art.append([])
+                for character in line:
+                    art[-1].append(character)
+            return art
+
+        if mode == Modes.HTML_MONOCHROME:
+            art = ''
+            for line in lines:
+                art += '<span>'
+
+                for character in line:
+                    art += '<span>' + character['character'] + '</span>'
+
+                art += '</span>'
+                art += '<br />'
+            return art
+
+        if mode == Modes.HTML_TERMINAL:
+            art = ''
+            for line in lines:
+                art += '<span>'
+
+                for character in line:
+                    art += f'<span style="color:{character["terminal-hex-color"]}">' + character['character'] + '</span>'
+
+                art += '</span>'
+                art += '<br />'
+
+            return art
+
+        if mode == Modes.HTML_FULL_COLOR:
+            art = ''
+            for line in lines:
+                art += '<span>'
+
+                for character in line:
+                    art += f'<span style="color:{character["full-hex-color"]}">' + character['character'] + '</span>'
+
+                art += '</span>'
+                art += '<br />'
+
+            return art
+
+    @staticmethod
+    def cc(color: Front | Back) -> str:
+        return '\033[' + str(color.value) + 'm'
+
+    @staticmethod
+    def l2_min(v1: list, v2: list) -> float:
+        return (v1[0] - v2[0])**2 + (v1[1] - v2[1])**2 + (v1[2] - v2[2])**2
+
+    @staticmethod
+    def get_color_data(char: str, rgb: Union[list, tuple], brightness: float) -> dict:
         min_distance = 2
         index = 0
 
         for i in range(len(PALETTE)):
-            tmp = [v*brightness for v in PALETTE[i][0]]
-            distance = self._l2_min(tmp, rgb)
+            tmp = [v * brightness for v in PALETTE[i][0]]
+            distance = AsciiArt.l2_min(tmp, rgb)
 
             if distance < min_distance:
                 index = i
                 min_distance = distance
 
         return {
-            'term': PALETTE[index][1],
-            'hex-term': PALETTE[index][2],
-            'hex': '#{:02x}{:02x}{:02x}'.format(*(int(c*200+55) for c in rgb)),
+            'character': char,
+            'terminal-color': AsciiArt.cc(PALETTE[index][1]),
+            'terminal-hex-color': PALETTE[index][2],
+            'full-hex-color': '#{:02x}{:02x}{:02x}'.format(*(int(c * 200 + 55) for c in rgb)),
         }
-
-    def _l2_min(self, v1: list, v2: list) -> float:
-        return (v1[0]-v2[0])**2 + (v1[1]-v2[1])**2 + (v1[2]-v2[2])**2
-
-    def _build_char(
-        self,
-        char: str,
-        srgb: list,
-        brightness: float,
-        previousColor: str,
-        mode: Modes = Modes.TERMINAL,
-        front: Optional[Front] = None,
-    ) -> str:
-        color = self._convert_color(srgb, brightness)
-
-        if mode == Modes.TERMINAL:
-            if front:
-                return char  # Front color will be set per-line
-            else:
-                if color['term'] == previousColor:
-                    return char
-                return color['term'] + char
-
-        elif mode == Modes.ASCII:
-            return char
-
-        elif mode == Modes.HTML_TERMINAL:
-            c = color['hex-term']
-            return f'<span style="color: {c}">{char}</span>'
-
-        elif mode == Modes.HTML:
-            c = color['hex']
-            return f'<span style="color: {c}">{char}</span>'
-
-        elif mode == Modes.HTML_MONOCHROME:
-            return f'<span style="color: white">{char}</span>'
 
     @staticmethod
     def _save_to_file(path: str, art: str) -> None:
@@ -309,9 +391,67 @@ class AsciiArt:
             f.write(art)
 
     @staticmethod
-    def _print_to_terminal(art: str):
-        colorama.init()
-        print(art)
+    def _save_to_image_file(
+        path: str,
+        art: list,
+        width: Union[int, Literal['auto']] = 'auto',
+        height: Union[int, Literal['auto']] = 'auto',
+        border_thickness: int = 2,
+        file_type: Literal['PNG', 'JPG', 'GIF', 'WEBP'] = 'PNG',
+        font: Optional[AsciiArtFont] = None,
+        monochrome: bool = False,
+        full_color: bool = False,
+        front: Optional[str] = None,
+        back: Optional[str] = None,
+    ) -> None:
+        if font is None:
+            font = AsciiArtFont('Courier Prime.ttf')
+        char_width, _, line_height = font.get_char_size()
+
+        cols = max(len(line) for line in art)
+        rows = len(art)
+
+        img_width = cols * char_width + border_thickness * 2
+        img_height = rows * line_height + border_thickness * 2
+
+        if back:
+            bg_color = back
+        else:
+            bg_color = 'black'
+
+        img = Image.new('RGB', (img_width, img_height), color=bg_color)
+        draw = ImageDraw.Draw(img)
+
+        y = border_thickness - 1
+        for line in art:
+            x = border_thickness
+            for character in line:
+                fg_color = None
+                if front:
+                    fg_color = front
+                elif full_color:
+                    fg_color = character['full-hex-color']
+                elif monochrome:
+                    fg_color = '#FFFFFF'
+                else:
+                    fg_color = character['terminal-hex-color']
+
+                draw.text((x, y), character['character'], fill=fg_color, font=font.get_font())
+                x += char_width
+            y += line_height
+
+        target_width = width if width != 'auto' else img_width
+        target_height = height if height != 'auto' else img_height
+
+        if target_width != img_width and height == 'auto':
+            target_height = int(target_height * target_width / img_width)
+        if target_height != img_height and width == 'auto':
+            target_width = int(target_width * target_height / img_height)
+
+        if target_width != img_width or target_height != img_height:
+            img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
+
+        img.save(path, file_type)
 
     @staticmethod
     def _save_to_html_file(
@@ -324,7 +464,7 @@ class AsciiArt:
         html = f"""<!DOCTYPE html>
     <head>
         <title>ASCII art</title>
-        <meta name="generator" content="ASCII Magic {__VERSION__} - https://github.com/LeandroBarone/python-ascii_magic/" />
+        <meta name="generator" content="ASCII Magic {AsciiArt.__VERSION__} - https://github.com/LeandroBarone/python-ascii_magic/" />
     </head>
     <body>
         <pre style="{styles} {additional_styles}">{art}</pre>
@@ -339,6 +479,23 @@ class AsciiArt:
     def quick_test(cls):
         img = cls.from_url('https://cataas.com/cat')
         img.to_terminal()
+
+    @classmethod
+    def print_palette(cls):
+        for f in Front:
+            if f == Front.RESET:
+                continue
+            for b in Back:
+                if b == Back.RESET:
+                    continue
+                print(
+                    f.name + ' on ' + b.name + ' = ',
+                    cls.cc(f),
+                    cls.cc(b),
+                    'ASCII_MAGIC',
+                    cls.cc(Front.RESET),
+                    cls.cc(Back.RESET),
+                )
 
     @classmethod
     def from_url(cls, url: str) -> 'AsciiArt':
@@ -379,15 +536,6 @@ class AsciiArt:
         debug: bool = False,
     ) -> 'AsciiArt':
         img = cls._load_stable_diffusion(prompt, api_key=api_key, engine=engine, steps=steps, debug=debug)
-        return AsciiArt(img)
-
-    @classmethod
-    def from_craiyon(
-        cls,
-        prompt: str,
-        debug: bool = False,
-    ) -> 'AsciiArt':
-        img = cls._load_craiyon(prompt, debug=debug)
         return AsciiArt(img)
 
     @classmethod
@@ -519,40 +667,3 @@ class AsciiArt:
                     return img
 
         raise OSError('No artifacts returned')
-
-    @classmethod
-    def _load_craiyon(cls, prompt: str, debug: bool = False) -> Image.Image:
-        try:
-            import requests
-        except ModuleNotFoundError:
-            print('Using Craiyon requires the module requests')
-            print('pip install requests')
-            exit()
-
-        headers = {
-            'accept': 'application/json',
-        }
-
-        payload = {
-            'prompt': prompt,
-            'token': None,
-            'version': '35s5hfwn9n78gb06',
-        }
-
-        response = requests.post('https://api.craiyon.com/draw', json=payload, headers=headers)
-
-        if debug:
-            with open(str(int(time())) + '_craiyon.json', 'w') as f:
-                f.write(response.text)
-
-        images = response.json().get('images')
-        image_url = 'https://img.craiyon.com/' + str(images[0])
-
-        response = requests.get(image_url, stream=True)
-
-        img = Image.open(response.raw)
-
-        if debug:
-            img.save(str(int(time())) + '_craiyon.png')
-
-        return img
