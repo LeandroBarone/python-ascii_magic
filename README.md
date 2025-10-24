@@ -6,6 +6,9 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.5 - Oct 2025
+- Optional image enhancement
+
 ### v2.4 - Oct 2025
 - Removed Colorama dependency (no longer needed in the latest versions of Windows)
 - to_image_file()
@@ -330,8 +333,9 @@ The module ```ascii_magic``` exposes two enums to handle color: ```Front``` and 
 AsciiArt.to_ascii(
     columns: Optional[int] = 120,
     width_ratio: Optional[float] = 2.2,
-    monochrome: Optional[bool] = False,
     char: Optional[str],
+    enhance_image: Optional[bool] = False,
+    monochrome: Optional[bool] = False,
     front: Optional[Front],
     back: Optional[Back]
 ) -> str
@@ -341,8 +345,9 @@ Parameters:
 
 - ```columns (int, optional)```: the number of characters per row, more columns = wider art
 - ```width_ratio (float, optional)```: ASCII characters are not squares, so this adjusts the width to height ratio during generation
-- ```monochrome (bool, optional)```: if set to True, completely disables color
 - ```char (str, optional)```: specifies one or more characters sorted by brightness, such as ' .$@'
+- ```enhance_image (bool, optional)```: if set to True, enhances the image before generating ASCII art
+- ```monochrome (bool, optional)```: if set to True, completely disables color
 - ```front (enum, optional)```: overrides the foreground color with one of:
   - ```Front.BLACK```
   - ```Front.RED```
@@ -484,6 +489,7 @@ AsciiArt.to_image_file(
     font: Optional[str] = 'Courier Prime.ttf',
     width_ratio: Optional[float | 'auto'] = 'auto',
     char: Optional[str] = None,
+    enhance_image: Optional[bool] = False,
     monochrome: Optional[bool] = False,
     full_color: Optional[bool] = False,
     front: Optional[str] = None,
@@ -494,13 +500,14 @@ AsciiArt.to_image_file(
 Parameters:
 
 - ```path (str)```: the output file path
-- ```Width (int | 'auto', optional)```: the width of the image
-- ```Height (int | 'auto', optional)```: the height of the image
-- ```Border thickness (int, optional)```: the thickness of the border around the image
-- ```File type (str, optional)```: the file type of the image, must be one of 'PNG', 'JPG', 'GIF', 'WEBP'
-- ```Font (str, optional)```: the font to use for the image
-- ```Width ratio (float | 'auto', optional)```: the width ratio of the image, if 'auto', it will be calculated based on the font
+- ```width (int | 'auto', optional)```: the width of the image
+- ```height (int | 'auto', optional)```: the height of the image
+- ```border_thickness (int, optional)```: the thickness of the border around the image
+- ```file_type (str, optional)```: the file type of the image, must be one of 'PNG', 'JPG', 'GIF', 'WEBP'
+- ```font (str, optional)```: the font to use for the image
+- ```width_ratio (float | 'auto', optional)```: the width ratio of the image, if 'auto', it will be calculated based on the font
 - ```char (str, optional)```: specifies one or more characters sorted by brightness, such as ' .$@'
+- ```enhance_image (bool, optional)```: if set to True, enhances the image before generating ASCII art
 - ```monochrome (bool, optional)```: if set to True, completely disables color
 - ```full_color (bool, optional)```: if set to True, uses the full color palette (16 million colors), otherwise uses the terminal color palette (8 colors)
 - ```front (str, optional)```: overrides the foreground color with a hex color (e.g. '#00FF00')
