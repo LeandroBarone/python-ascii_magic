@@ -7,7 +7,7 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 # Changelog
 
 ### v2.4 - Oct 2025
-- Removed Colorama dependency (no longer needed in latest versions of Windows)
+- Removed Colorama dependency (no longer needed in the latest versions of Windows)
 - to_image_file()
 - to_character_list()
 - print_palette()
@@ -303,6 +303,17 @@ my_art = AsciiArt.from_pillow_image(img)
 my_art.to_terminal()
 ```
 
+## print_palette()
+
+Prints the entire 8-color palette to the console.
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+AsciiArt.print_palette()
+```
 
 # The AsciiArt object
 
