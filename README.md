@@ -82,7 +82,7 @@ my_art.to_terminal()
 
 ## quick_test()
 
-Loads a random Unsplash picture with the default parameters and prints it to the terminal, allowing you to verify in a single line of code that everything is running O.K.
+Loads a cat picture from [Cat as a Service](https://cataas.com/) with the default parameters and prints it to the terminal, allowing you to verify in a single line of code that everything is running O.K.
 
 ```python
 AsciiArt.quick_test() -> None
@@ -257,7 +257,7 @@ Example:
 from ascii_magic import AsciiArt
 
 try:
-    my_art = AsciiArt.from_url('https://source.unsplash.com/800x600?nature')
+    my_art = AsciiArt.from_url('https://cataas.com/cat')
 except OSError as e:
     print(f'Could not load the image, server said: {e.code} {e.msg}')
 my_art.to_terminal()
@@ -460,6 +460,10 @@ my_art.to_html_file('lion.html', columns=200, additional_styles='font-family: Mo
 Result:
 
 ![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_html.png)
+
+# Testing
+
+With ```pytest``` installed, run it in ascii_magic/tests/.
 
 # Licence
 

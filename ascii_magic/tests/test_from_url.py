@@ -2,7 +2,7 @@ from ascii_magic import AsciiArt
 
 
 def test_from_url():
-    my_art = AsciiArt.from_url('https://source.unsplash.com/800x600?nature')
+    my_art = AsciiArt.from_url('https://cataas.com/cat')
     my_art.to_terminal()
 
 

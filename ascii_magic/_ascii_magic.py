@@ -331,7 +331,7 @@ class AsciiArt:
 
     @classmethod
     def quick_test(cls):
-        img = cls.from_url('https://source.unsplash.com/800x600?landscapes')
+        img = cls.from_url('https://cataas.com/cat')
         img.to_terminal()
 
     @classmethod
