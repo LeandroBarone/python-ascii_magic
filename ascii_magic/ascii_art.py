@@ -3,7 +3,7 @@ from ascii_magic.ascii_art_font import AsciiArtFont
 
 import webbrowser
 import urllib.request
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageEnhance
 
 import io
 from typing import Optional, Union, Literal
@@ -31,6 +31,7 @@ class AsciiArt:
         width_ratio: float = 2.2,
         char: Optional[str] = None,
         monochrome: bool = False,
+        enhance_image: bool = False,
         back: Optional[Back] = None,
         front: Optional[Front] = None,
         debug: bool = False,
@@ -41,6 +42,7 @@ class AsciiArt:
             char=char,
             mode=Modes.ASCII,
             monochrome=monochrome,
+            enhance_image=enhance_image,
             back=back,
             front=front,
             debug=debug,
@@ -52,6 +54,7 @@ class AsciiArt:
         columns: int = 120,
         width_ratio: float = 2.2,
         char: Optional[str] = None,
+        enhance_image: bool = False,
         monochrome: bool = False,
         back: Optional[Back] = None,
         front: Optional[Front] = None,
@@ -61,6 +64,7 @@ class AsciiArt:
             columns=columns,
             width_ratio=width_ratio,
             char=char,
+            enhance_image=enhance_image,
             monochrome=monochrome,
             back=back,
             front=front,
@@ -75,6 +79,7 @@ class AsciiArt:
         columns: int = 120,
         width_ratio: float = 2.2,
         char: Optional[str] = None,
+        enhance_image: bool = False,
         monochrome: bool = False,
         back: Optional[Back] = None,
         front: Optional[Front] = None,
@@ -84,6 +89,7 @@ class AsciiArt:
             columns=columns,
             width_ratio=width_ratio,
             char=char,
+            enhance_image=enhance_image,
             monochrome=monochrome,
             back=back,
             front=front,
@@ -103,6 +109,7 @@ class AsciiArt:
         columns: int = 120,
         width_ratio: Union[float, Literal['auto']] = 'auto',
         char: Optional[str] = None,
+        enhance_image: bool = False,
         monochrome: bool = False,
         full_color: bool = False,
         back: Optional[Union[Back, str]] = None,
@@ -122,6 +129,7 @@ class AsciiArt:
             columns=columns,
             width_ratio=width_ratio,
             char=char,
+            enhance_image=enhance_image,
             monochrome=monochrome,
             full_color=full_color,
             back=back,
@@ -149,6 +157,7 @@ class AsciiArt:
         columns: int = 120,
         width_ratio: float = 2.2,
         char: Optional[str] = None,
+        enhance_image: bool = False,
         monochrome: bool = False,
         full_color: bool = False,
         debug: bool = False,
@@ -158,6 +167,7 @@ class AsciiArt:
             columns=columns,
             width_ratio=width_ratio,
             char=char,
+            enhance_image=enhance_image,
             monochrome=monochrome,
             full_color=full_color,
             debug=debug,
@@ -170,6 +180,7 @@ class AsciiArt:
         columns: int = 120,
         width_ratio: float = 2.2,
         char: Optional[str] = None,
+        enhance_image: bool = False,
         monochrome: bool = False,
         full_color: bool = True,
         styles: str = DEFAULT_STYLES,
@@ -182,6 +193,7 @@ class AsciiArt:
             columns=columns,
             width_ratio=width_ratio,
             char=char,
+            enhance_image=enhance_image,
             monochrome=monochrome,
             full_color=full_color,
             debug=debug,
@@ -224,6 +236,7 @@ class AsciiArt:
         width_ratio: float = 2.2,
         char: Optional[str] = None,
         mode: Modes = Modes.TERMINAL,
+        enhance_image: bool = False,
         monochrome: bool = False,
         full_color: bool = False,
         back: Optional[Back] = None,
@@ -252,6 +265,9 @@ class AsciiArt:
         img_w = int(img_w * width_ratio / scalar)
         img_h = int(img_h / scalar)
         rgb_img = self._image.resize((img_w, img_h))
+        if enhance_image:
+            rgb_img = ImageEnhance.Color(rgb_img).enhance(1.2)
+            rgb_img = ImageEnhance.Contrast(rgb_img).enhance(1.2)
         color_palette = self._image.getpalette()
 
         grayscale_img = rgb_img.convert("L")
