@@ -1,4 +1,5 @@
 from ascii_magic import AsciiArt
+
 from PIL import Image
 
 

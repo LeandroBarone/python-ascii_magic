@@ -1,4 +1,4 @@
-from ascii_magic._ascii_magic import AsciiArt
+from ascii_magic import AsciiArt
 
 from PIL import Image
 
@@ -41,10 +41,3 @@ def from_stable_diffusion(
     debug: bool = False,
 ) -> AsciiArt:
     return AsciiArt.from_stable_diffusion(prompt, api_key, engine=engine, steps=steps, debug=debug)
-
-
-def from_craiyon(
-    prompt: str,
-    debug: bool = False,
-) -> AsciiArt:
-    return AsciiArt.from_craiyon(prompt, debug=debug)

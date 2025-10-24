@@ -1,10 +1,17 @@
 # ASCII Magic
 
-Python package that converts images into ASCII art for terminals and HTML. Thanks to [Colorama](https://github.com/tartley/colorama) it's compatible with the Windows terminal.
+Python package that converts images into ASCII art for terminals and HTML.
 
 Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
+
+### v2.4 - Oct 2025
+- Removed Colorama dependency (no longer needed in latest versions of Windows)
+- to_image_file()
+- to_character_list()
+- print_palette()
+- Removed Craiyon support (API no longer available)
 
 ### v2.3 - Feb 2023
 - Craiyon support: from_craiyon()
@@ -43,6 +50,23 @@ my_art.to_terminal()
 Result:
 
 ![ASCII Magic example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_moon.png)
+
+
+# Colors don't work on Windows? Try this
+Install [Colorama](https://github.com/tartley/colorama) and run ```colorama.init()``` before printing to the console.
+
+```
+pip install colorama
+```
+
+```python
+import colorama
+from ascii_magic import AsciiArt
+
+my_art = AsciiArt.from_image('moon.jpg')
+colorama.init()
+my_art.to_terminal()
+```
 
 
 # The class AsciiArt
@@ -149,33 +173,6 @@ Result:
 ![ASCII Magic ASCII mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
 
 
-## from_craiyon()
-
-Creates an ```AsciiArt``` object with [Craiyon](https://www.craiyon.com/), previously known as DALL-E Mini, a machine learning model that can generate realistic images from a description in natural language.
-
-Keep in mind that this process can take one minute or more!
-
-```python
-from_craiyon(prompt: str) -> AsciiArt
-```
-
-Parameters:
-
-- ```prompt (str)```: a description of an image in natural language
-
-Example:
-
-```python
-from ascii_magic import AsciiArt
-
-my_art = AsciiArt.from_craiyon('A portrait of a cow with noble clothes')
-my_art.to_html_file('cow_craiyon.html', columns=200)
-```
-
-Result:
-
-![ASCII Magic Craiyon example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_craiyon.png)
-
 ## from_dalle()
 
 Creates an ```AsciiArt``` object with [DALL-E](https://openai.com/dall-e/), a machine learning model that can generate realistic images from a description in natural language. Requires a [DALL-E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
@@ -212,8 +209,8 @@ Creates an ```AsciiArt``` object with [Stable Diffusion](https://stability.ai/),
 ```python
 from_stable_diffusion(
     prompt: str,
-    api_key: str,
-    steps: int = 30,
+    api_key: Optional[str],
+    steps: Optional[int] = 30,
     engine: Optional[str],
 ) -> AsciiArt
 ```
@@ -320,9 +317,9 @@ The module ```ascii_magic``` exposes two enums to handle color: ```Front``` and 
 
 ```python
 AsciiArt.to_ascii(
-    columns: int = 120,
-    width_ratio: float = 2.2,
-    monochrome: bool = False,
+    columns: Optional[int] = 120,
+    width_ratio: Optional[float] = 2.2,
+    monochrome: Optional[bool] = False,
     char: Optional[str],
     front: Optional[Front],
     back: Optional[Back]
@@ -333,8 +330,8 @@ Parameters:
 
 - ```columns (int, optional)```: the number of characters per row, more columns = wider art
 - ```width_ratio (float, optional)```: ASCII characters are not squares, so this adjusts the width to height ratio during generation
-- ```monochrome (bool, optional)```: if set to True, disables the usage of control characters that display color
-- ```char (str, optional)```: instead of using many different ASCII glyphs, you can use a single one, such as '#'
+- ```monochrome (bool, optional)```: if set to True, completely disables color
+- ```char (str, optional)```: specifies one or more characters sorted by brightness, such as ' .$@'
 - ```front (enum, optional)```: overrides the foreground color with one of:
   - ```Front.BLACK```
   - ```Front.RED```
@@ -427,9 +424,9 @@ Identical to ```AsciiArt.to_html()```, but it also saves the markup to a barebon
 ```python
 AsciiArt.to_html_file(
     path: str,
-    styles: str = '...',  # See description below
-    additional_styles: str = '',
-    auto_open: bool = False
+    styles: Optional[str] = '...',  # See description below
+    additional_styles: Optional[str] = '',
+    auto_open: Optional[bool] = False
     # ... same parameters as AsciiArt.to_html()
 ) -> str
 ```
@@ -443,6 +440,7 @@ Parameters:
   - border-color: black;
   - border-style: solid;
   - background-color: black;
+  - color: white;
   - font-size: 8px;
 - ```additional_styles (str, optional)```: use this to add your own CSS styles without removing the default ones
 - ```auto_open (bool, optional)```: if True, the file will be opened with ```webbrowser.open()```
@@ -461,9 +459,99 @@ Result:
 
 ![ASCII Magic HTML mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_html.png)
 
+## to_image_file()
+
+Generates a image file with the resulting ASCII art. Accepts the same parameters as ```AsciiArt.to_ascii()```. By default the ASCII art is generated with a 24-bit palette (16 million colors). If both width and height are set to auto, no resizing will be performed. If width or height is set to 'auto', the output will be resized proportionally. If both width and height are specified, the output will be resized to the specified dimensions, ignoring aspect ratio. Returns a 2d character list (see ```to_character_list()``` below).
+
+```python
+AsciiArt.to_image_file(
+    path: str,
+    width: Optional[int | 'auto'] = 'auto',
+    height: Optional[int | 'auto'] = 'auto',
+    border_thickness: Optional[int] = 2,
+    file_type: Optional['PNG'|'JPG'|'GIF'|'WEBP'] = 'PNG',
+    font: Optional[str] = 'Courier Prime.ttf',
+    width_ratio: Optional[float | 'auto'] = 'auto',
+    char: Optional[str] = None,
+    monochrome: Optional[bool] = False,
+    full_color: Optional[bool] = False,
+    front: Optional[str] = None,
+    back: Optional[str] = '#000000',
+) -> list[list[dict]]
+```
+
+Parameters:
+
+- ```path (str)```: the output file path
+- ```Width (int | 'auto', optional)```: the width of the image
+- ```Height (int | 'auto', optional)```: the height of the image
+- ```Border thickness (int, optional)```: the thickness of the border around the image
+- ```File type (str, optional)```: the file type of the image, must be one of 'PNG', 'JPG', 'GIF', 'WEBP'
+- ```Font (str, optional)```: the font to use for the image
+- ```Width ratio (float | 'auto', optional)```: the width ratio of the image, if 'auto', it will be calculated based on the font
+- ```char (str, optional)```: specifies one or more characters sorted by brightness, such as ' .$@'
+- ```monochrome (bool, optional)```: if set to True, completely disables color
+- ```full_color (bool, optional)```: if set to True, uses the full color palette (16 million colors), otherwise uses the terminal color palette (8 colors)
+- ```front (str, optional)```: overrides the foreground color with a hex color (e.g. '#00FF00')
+- ```back (str, optional)```: background color (default: '#000000')
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+my_art = AsciiArt.from_image('lion.jpg')
+my_art.to_image_file('lion_output.png')
+```
+
+## to_character_list()
+
+Generates a 2d character list where each character is an object that contains the character, the terminal color, the terminal hex color, and the full hex color.
+
+```python
+AsciiArt.to_character_list(
+    full_color: Optional[bool] = False,
+    # ... same parameters as AsciiArt.to_ascii()
+) -> list[list[dict]]
+```
+
+Parameters:
+
+- ```full_color (bool, optional)```: if set to True, uses the full color palette (16 million colors), otherwise uses the terminal color palette (8 colors)
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+my_art = AsciiArt.from_image('lion.jpg')
+my_character_list = my_art.to_character_list(columns=60)
+print(my_character_list)
+```
+
+Output:
+
+```python
+[
+    [
+        { 'character': 'o', 'terminal-color': '\x1b[31m', 'terminal-hex-color': '#FF0000', 'full-hex-color': '#FF3742' },
+        { 'character': '%', 'terminal-color': '\x1b[33m', 'terminal-hex-color': '#FF00FF', 'full-hex-color': '#FF43AA' },
+        { 'character': '#', 'terminal-color': '\x1b[31m', 'terminal-hex-color': '#FF0000', 'full-hex-color': '#FF3742' },
+        # ...
+    ],
+    [
+        { 'character': 'o', 'terminal-color': '\x1b[31m', 'terminal-hex-color': '#FF0000', 'full-hex-color': '#FF3742' },
+        { 'character': '%', 'terminal-color': '\x1b[33m', 'terminal-hex-color': '#FF00FF', 'full-hex-color': '#FF43AA' },
+        { 'character': '#', 'terminal-color': '\x1b[31m', 'terminal-hex-color': '#FF0000', 'full-hex-color': '#FF3742' },
+        # ...
+    ],
+    # ...
+]
+```
+
 # Testing
 
-With ```pytest``` installed, run it in ascii_magic/tests/.
+With ```pytest``` installed, run it inside ```ascii_magic/tests/```.
 
 # Licence
 
