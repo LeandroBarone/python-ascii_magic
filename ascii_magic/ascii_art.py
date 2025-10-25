@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageEnhance
 
 import io
 import os
+import json
 import webbrowser
 import urllib.request
 from typing import Optional, Union, Literal
@@ -12,7 +13,7 @@ from time import time
 
 
 class AsciiArt:
-    __VERSION__ = 2.4
+    __VERSION__ = 2.7
 
     def __init__(self, image: Image.Image):
         self._image = image
@@ -103,7 +104,8 @@ class AsciiArt:
         path: str,
         width: Union[int, Literal['auto']] = 'auto',
         height: Union[int, Literal['auto']] = 'auto',
-        border_thickness: int = 2,
+        border_width: int = 2,
+        stroke_width: float = 0.5,
         file_type: Literal['PNG', 'JPG', 'GIF', 'WEBP'] = 'PNG',
         font: str = 'Courier Prime.ttf',
         columns: int = 120,
@@ -112,8 +114,8 @@ class AsciiArt:
         enhance_image: bool = False,
         monochrome: bool = False,
         full_color: bool = False,
-        back: Optional[Union[Back, str]] = None,
         front: Optional[Union[Front, str]] = None,
+        back: str = '#000000',
         debug: bool = False,
     ):
         try:
@@ -143,12 +145,13 @@ class AsciiArt:
             font=font,
             width=width,
             height=height,
-            border_thickness=border_thickness,
+            border_width=border_width,
+            stroke_width=stroke_width,
             file_type=file_type,
             monochrome=monochrome,
             full_color=full_color,
-            back=back,
             front=front,
+            back=back,
         )
         return art
 
@@ -412,14 +415,14 @@ class AsciiArt:
         art: list,
         width: Union[int, Literal['auto']] = 'auto',
         height: Union[int, Literal['auto']] = 'auto',
-        border_thickness: int = 2,
+        border_width: int = 2,
         stroke_width: float = 0.5,
         file_type: Literal['PNG', 'JPG', 'GIF', 'WEBP'] = 'PNG',
         font: Optional[AsciiArtFont] = None,
         monochrome: bool = False,
         full_color: bool = False,
         front: Optional[str] = None,
-        back: Optional[str] = None,
+        back: str = '#000000',
     ) -> None:
         if font is None:
             font = AsciiArtFont('Courier Prime.ttf')
@@ -428,20 +431,15 @@ class AsciiArt:
         cols = max(len(line) for line in art)
         rows = len(art)
 
-        img_width = cols * char_width + border_thickness * 2
-        img_height = rows * line_height + border_thickness * 2
+        img_width = cols * char_width + border_width * 2
+        img_height = rows * line_height + border_width * 2
 
-        if back:
-            bg_color = back
-        else:
-            bg_color = 'black'
-
-        img = Image.new('RGB', (img_width, img_height), color=bg_color)
+        img = Image.new('RGB', (img_width, img_height), color=back)
         draw = ImageDraw.Draw(img)
 
-        y = border_thickness - 1
+        y = border_width - 1
         for line in art:
-            x = border_thickness
+            x = border_width
             for character in line:
                 fg_color = None
                 if front:
@@ -529,10 +527,6 @@ class AsciiArt:
         return AsciiArt(img)
 
     @classmethod
-    def from_image_bytes(cls, img: bytes) -> 'AsciiArt':
-        return cls.from_pillow_image(Image.open(io.BytesIO(img)))
-
-    @classmethod
     def from_clipboard(cls) -> 'AsciiArt':
         img = cls._load_clipboard()
         return AsciiArt(img)
@@ -541,11 +535,35 @@ class AsciiArt:
     def from_gemini(
         cls,
         prompt: str,
+        model: str = None,
         api_key: Optional[str] = None,
-        model: Optional[str] = None,
         debug: bool = False
     ) -> 'AsciiArt':
-        image = cls._load_gemini(prompt, api_key=api_key, model=model, debug=debug)
+        image = cls._load_gemini(prompt, model=model, api_key=api_key, debug=debug)
+        return AsciiArt(image)
+
+    @classmethod
+    def from_swamui(
+        cls,
+        prompt: str,
+        width: int = 1280,
+        height: int = 720,
+        steps: int = 20,
+        raw_input: dict = {},
+        server: str = 'http://localhost:7801',
+        model: str = 'auto',
+        debug: bool = False
+    ) -> 'AsciiArt':
+        image = cls._load_swarmui(
+            prompt,
+            width=width,
+            height=height,
+            steps=steps,
+            raw_input=raw_input,
+            server=server,
+            model=model,
+            debug=debug,
+        )
         return AsciiArt(image)
 
     @classmethod
@@ -604,8 +622,8 @@ class AsciiArt:
     def _load_gemini(
         cls,
         prompt: str,
+        model: str = None,
         api_key: Optional[str] = None,
-        model: Optional[str] = None,
         debug: bool = False
     ) -> Image.Image:
         try:
@@ -615,8 +633,9 @@ class AsciiArt:
             print('pip install google-genai')
             exit()
 
-        if not api_key:
-            api_key = os.environ.get('GEMINI_API_KEY')
+        environ_api_key = os.environ.get('GEMINI_API_KEY')
+        if not api_key and environ_api_key:
+            api_key = environ_api_key
 
         if not api_key:
             raise ValueError('You must set up an API key before accessing Gemini')
@@ -652,3 +671,94 @@ class AsciiArt:
                 return Image.open(io.BytesIO(generated_image.image_bytes))
 
         raise OSError('No images generated')
+
+    @classmethod
+    def _load_swarmui(
+        cls,
+        prompt: str,
+        width: int = 1280,
+        height: int = 720,
+        steps: int = 20,
+        raw_input: dict = {},
+        server: str = 'http://localhost:7801',
+        model: str = 'auto',
+        debug: bool = False
+    ) -> Image.Image:
+        environ_server = os.environ.get('SWARMUI_SERVER')
+        if not server and environ_server:
+            server = environ_server
+
+        if not server:
+            raise ValueError('You must set up a SwarmUI server before accessing SwarmUI')
+
+        session_response = urllib.request.urlopen(
+            urllib.request.Request(
+                f'{server}/API/GetNewSession',
+                data=json.dumps({}).encode('utf-8'),
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+        )
+        session_data = json.loads(session_response.read().decode('utf-8'))
+        session_id = session_data.get('session_id')
+
+        if not session_id:
+            raise OSError('Failed to obtain session_id from SwarmUI server')
+
+        # Pick model from server if none was provided
+        if model == 'auto':
+            models_response = urllib.request.urlopen(
+                urllib.request.Request(
+                    f'{server}/API/ListModels',
+                    data=json.dumps({
+                        'session_id': session_id,
+                        'path': '',
+                        'depth': 3,
+                    }).encode('utf-8'),
+                    headers={'Content-Type': 'application/json'},
+                    method='POST',
+                )
+            )
+
+            models = json.loads(models_response.read().decode('utf-8'))
+
+            if debug:
+                with open(str(int(time())) + '_swarmui_ListModels_response.txt', 'w') as f:
+                    f.write(str(models))
+
+            model = models['files'][0]['name']
+
+        generate_response = urllib.request.urlopen(
+            urllib.request.Request(
+                f'{server}/API/GenerateText2Image',
+                data=json.dumps({
+                    'session_id': session_id,
+                    'images': 1,
+                    'model': model,
+                    'prompt': prompt,
+                    'width': width,
+                    'height': height,
+                    'steps': steps,
+                    **raw_input,
+                }).encode('utf-8'),
+                headers={'Content-Type': 'application/json'},
+                method='POST',
+            )
+        )
+
+        generate_data = json.loads(generate_response.read().decode('utf-8'))
+
+        if debug:
+            with open(str(int(time())) + '_swarmui_GenerateText2Image_response.txt', 'w') as f:
+                f.write(str(generate_data))
+
+        if 'error' in generate_data:
+            raise OSError(generate_data['error'])
+
+        if 'images' in generate_data and len(generate_data['images']) > 0:
+            image_path = generate_data['images'][0]
+            image_path_parsed = urllib.parse.quote(image_path, safe='/')
+            image_url = f'{server}/{image_path_parsed}'
+            return cls._load_url(image_url)
+
+        raise OSError('No images generated by SwarmUI')
