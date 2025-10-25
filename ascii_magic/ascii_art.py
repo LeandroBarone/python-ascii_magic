@@ -107,7 +107,7 @@ class AsciiArt:
         border_width: int = 2,
         stroke_width: float = 0.5,
         file_type: Literal['PNG', 'JPG', 'GIF', 'WEBP'] = 'PNG',
-        font: str = 'Courier Prime.ttf',
+        font: str = 'courier_prime.ttf',
         columns: int = 120,
         width_ratio: Union[float, Literal['auto']] = 'auto',
         char: Optional[str] = None,
@@ -425,7 +425,7 @@ class AsciiArt:
         back: str = '#000000',
     ) -> None:
         if font is None:
-            font = AsciiArtFont('Courier Prime.ttf')
+            font = AsciiArtFont('courier_prime.ttf')
         char_width, _, line_height = font.get_char_size()
 
         cols = max(len(line) for line in art)
