@@ -7,6 +7,5 @@ from ascii_magic.functions import (
     from_pillow_image,
     from_url,
     from_clipboard,
-    from_dalle,
-    from_stable_diffusion,
+    from_gemini,
 )

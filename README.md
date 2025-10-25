@@ -6,6 +6,11 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.6 - Oct 2025
+- Gemini support
+- to_image_file() stroke_width parameter
+- Removed Stable Diffusion and DALL-E support (API no longer available)
+
 ### v2.5 - Oct 2025
 - Optional image enhancement
 
@@ -176,68 +181,37 @@ Result:
 ![ASCII Magic ASCII mode example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_lion_ascii.png)
 
 
-## from_dalle()
+## from_gemini()
 
-Creates an ```AsciiArt``` object with [DALL-E](https://openai.com/dall-e/), a machine learning model that can generate realistic images from a description in natural language. Requires a [DALL-E API key](https://platform.openai.com/account/api-keys). The API key can be configured in the module as described in the OpenAI documentation (```openai.api_key = api_key```) or through this function call.
+Creates an ```AsciiArt``` object with [Gemini](https://aistudio.google.com/), a generative platform that can create realistic images from a description in natural language. Requires a [free API key](https://aistudio.google.com/api-keys). The API key can be set in the environment variable ```GEMINI_API_KEY``` or passed as an argument.
 
 ```python
-from_dalle(
+from_gemini(
     prompt: str,
-    api_key: Optional[str]
+    api_key: Optional[str] = None,
+    model: Optional[str] = 'gemini-2.0-flash-preview-image-generation',
 ) -> AsciiArt
 ```
 
 Parameters:
 
 - ```prompt (str)```: a description of an image in natural language
-- ```api_key (str, optional)```: a DALL-E API key
+- ```api_key (str, optional)```: a Gemini API key
+- ```model (str, optional)```: the model to use for generation
 
 Example:
 
 ```python
 from ascii_magic import AsciiArt
 
-api_key = 'SK-AFAKEDALLEAPIKEY'
-my_art = AsciiArt.from_dalle('A portrait of a cow with noble clothes', api_key)
-my_art.to_html_file('cow_dalle.html', columns=200)
+api_key = 'aFaKeGeMiNiApIkEy'
+my_art = AsciiArt.from_gemini('A portrait of a cow with noble clothes', api_key)
+my_art.to_image_file('example_gemini.png', columns=80, full_color=True)
 ```
 
 Result:
 
-![ASCII Magic DALL-E example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_dalle.png)
-## from_stable_diffusion()
-
-Creates an ```AsciiArt``` object with [Stable Diffusion](https://stability.ai/), a machine learning model that can generate realistic images from a description in natural language. Requires a [Stable Diffusion API key](https://platform.stability.ai/).
-
-```python
-from_stable_diffusion(
-    prompt: str,
-    api_key: Optional[str],
-    steps: Optional[int] = 30,
-    engine: Optional[str],
-) -> AsciiArt
-```
-
-Parameters:
-
-- ```prompt (str)```: a description of an image in natural language
-- ```api_key (str, optional)```: a Stable Diffusion API key
-- ```steps (int, optional)```: amount of inference steps performed (see Stable Diffusion documentation)
-- ```engine (str, optional)```: set the engine to use for generation (see Stable Diffusion documentation)
-
-Example:
-
-```python
-from ascii_magic import AsciiArt
-
-api_key = 'SK-AFAKESTABLEDIFFUSIONAPIKEY'
-my_art = AsciiArt.from_stable_diffusion('A portrait of a cow with noble clothes', api_key)
-my_art.to_html_file('cow_stable_diffusion.html', columns=200)
-```
-
-Result:
-
-![ASCII Magic Stable Diffusion example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_stable_diffusion.png)
+![ASCII Magic Gemini example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_gemini.png)
 
 ## from_url()
 
@@ -485,6 +459,7 @@ AsciiArt.to_image_file(
     width: Optional[int | 'auto'] = 'auto',
     height: Optional[int | 'auto'] = 'auto',
     border_thickness: Optional[int] = 2,
+    stroke_width: Optional[float] = 0.5,
     file_type: Optional['PNG'|'JPG'|'GIF'|'WEBP'] = 'PNG',
     font: Optional[str] = 'Courier Prime.ttf',
     width_ratio: Optional[float | 'auto'] = 'auto',
@@ -503,6 +478,7 @@ Parameters:
 - ```width (int | 'auto', optional)```: the width of the image
 - ```height (int | 'auto', optional)```: the height of the image
 - ```border_thickness (int, optional)```: the thickness of the border around the image
+- ```stroke_width (float, optional)```: the width of the stroke around the characters
 - ```file_type (str, optional)```: the file type of the image, must be one of 'PNG', 'JPG', 'GIF', 'WEBP'
 - ```font (str, optional)```: the font to use for the image
 - ```width_ratio (float | 'auto', optional)```: the width ratio of the image, if 'auto', it will be calculated based on the font

@@ -1,14 +1,14 @@
 from ascii_magic.constants import Front, Back, Modes, CHARS_BY_DENSITY, DEFAULT_STYLES, PALETTE
 from ascii_magic.ascii_art_font import AsciiArtFont
 
-import webbrowser
-import urllib.request
 from PIL import Image, ImageDraw, ImageEnhance
 
 import io
+import os
+import webbrowser
+import urllib.request
 from typing import Optional, Union, Literal
 from time import time
-from json import dumps
 
 
 class AsciiArt:
@@ -266,8 +266,8 @@ class AsciiArt:
         img_h = int(img_h / scalar)
         rgb_img = self._image.resize((img_w, img_h))
         if enhance_image:
+            rgb_img = ImageEnhance.Brightness(rgb_img).enhance(1.2)
             rgb_img = ImageEnhance.Color(rgb_img).enhance(1.2)
-            rgb_img = ImageEnhance.Contrast(rgb_img).enhance(1.2)
         color_palette = self._image.getpalette()
 
         grayscale_img = rgb_img.convert("L")
@@ -413,6 +413,7 @@ class AsciiArt:
         width: Union[int, Literal['auto']] = 'auto',
         height: Union[int, Literal['auto']] = 'auto',
         border_thickness: int = 2,
+        stroke_width: float = 0.5,
         file_type: Literal['PNG', 'JPG', 'GIF', 'WEBP'] = 'PNG',
         font: Optional[AsciiArtFont] = None,
         monochrome: bool = False,
@@ -452,7 +453,7 @@ class AsciiArt:
                 else:
                     fg_color = character['terminal-hex-color']
 
-                draw.text((x, y), character['character'], fill=fg_color, font=font.get_font())
+                draw.text((x, y), character['character'], fill=fg_color, font=font.get_font(), stroke_width=stroke_width)
                 x += char_width
             y += line_height
 
@@ -528,31 +529,24 @@ class AsciiArt:
         return AsciiArt(img)
 
     @classmethod
+    def from_image_bytes(cls, img: bytes) -> 'AsciiArt':
+        return cls.from_pillow_image(Image.open(io.BytesIO(img)))
+
+    @classmethod
     def from_clipboard(cls) -> 'AsciiArt':
         img = cls._load_clipboard()
         return AsciiArt(img)
 
     @classmethod
-    def from_dalle(
+    def from_gemini(
         cls,
         prompt: str,
         api_key: Optional[str] = None,
+        model: Optional[str] = None,
         debug: bool = False
     ) -> 'AsciiArt':
-        img = cls._load_dalle(prompt, api_key=api_key, debug=debug)
-        return AsciiArt(img)
-
-    @classmethod
-    def from_stable_diffusion(
-        cls,
-        prompt: str,
-        api_key: str,
-        engine: Optional[str] = None,
-        steps: int = 30,
-        debug: bool = False,
-    ) -> 'AsciiArt':
-        img = cls._load_stable_diffusion(prompt, api_key=api_key, engine=engine, steps=steps, debug=debug)
-        return AsciiArt(img)
+        image = cls._load_gemini(prompt, api_key=api_key, model=model, debug=debug)
+        return AsciiArt(image)
 
     @classmethod
     def _load_url(cls, url: str) -> Image.Image:
@@ -607,79 +601,54 @@ class AsciiArt:
         return img
 
     @classmethod
-    def _load_dalle(
+    def _load_gemini(
         cls,
         prompt: str,
         api_key: Optional[str] = None,
+        model: Optional[str] = None,
         debug: bool = False
     ) -> Image.Image:
         try:
-            import openai
+            from google import genai
         except ModuleNotFoundError:
-            print('Using DALL-E requires the openai module')
-            print('pip install openai')
+            print('Using Gemini requires the google-genai module')
+            print('pip install google-genai')
             exit()
 
-        if api_key:
-            openai.api_key = api_key
+        if not api_key:
+            api_key = os.environ.get('GEMINI_API_KEY')
 
-        if not openai.api_key:
-            raise ValueError('You must set up an API key before accessing DALL-E')
+        if not api_key:
+            raise ValueError('You must set up an API key before accessing Gemini')
 
-        response = openai.Image.create(
-            prompt=prompt,
-            n=1,
-            size='256x256'
+        if not model:
+            model = 'gemini-2.0-flash-preview-image-generation'
+
+        client = genai.Client(
+            api_key=api_key,
+        )
+
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
+                response_modalities=["IMAGE", "TEXT"],
+            ),
         )
 
         if debug:
-            with open(str(int(time())) + '_dalle.json', 'w') as f:
-                f.write(dumps(response))
+            with open(str(int(time())) + '_gemini.txt', 'w') as f:
+                f.write(str(response))
 
-        url = response['data'][0]['url']  # type: ignore
-        return cls._load_url(url)
+        for part in response.parts:
+            if part.inline_data:
+                generated_image = part.as_image()
+                if debug:
+                    try:
+                        with open(str(int(time())) + '_gemini.png', 'wb') as f:
+                            f.write(generated_image.image_bytes)
+                    except Exception:
+                        pass
+                return Image.open(io.BytesIO(generated_image.image_bytes))
 
-    @classmethod
-    def _load_stable_diffusion(
-        cls,
-        prompt: str,
-        api_key: str,
-        engine: Optional[str] = None,
-        steps: int = 30,
-        debug: bool = False,
-    ) -> Image.Image:
-        try:
-            from stability_sdk import client
-            import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-        except ModuleNotFoundError:
-            print('Using Stable Diffusion requires the stability_sdk module')
-            print('pip install stability_sdk')
-            exit()
-
-        if not engine:
-            engine = 'stable-diffusion-256-v2-1'
-
-        stability_api = client.StabilityInference(
-            key=api_key,
-            verbose=debug,
-            engine=engine,
-        )
-
-        response = stability_api.generate(
-            prompt=prompt,
-            steps=steps,
-            width=256,
-            height=256,
-        )
-
-        for answer in response:
-            for artifact in answer.artifacts:
-                if artifact.finish_reason == generation.FILTER:
-                    raise OSError('Your prompt triggered Stable Diffusion\'s safety filter.')
-                if artifact.type == generation.ARTIFACT_IMAGE:
-                    img = Image.open(io.BytesIO(artifact.binary))
-                    if debug:
-                        img.save(str(int(time())) + "_stable_diffusion.png")
-                    return img
-
-        raise OSError('No artifacts returned')
+        raise OSError('No images generated')
