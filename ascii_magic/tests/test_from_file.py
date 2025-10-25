@@ -2,7 +2,7 @@ from ascii_magic import AsciiArt
 
 
 def test_from_file():
-    my_art = AsciiArt.from_image('kid.jpg')
+    my_art = AsciiArt.from_image('lion.jpg')
     my_art.to_terminal()
 
 

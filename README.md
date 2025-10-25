@@ -510,7 +510,7 @@ AsciiArt.to_image_file(
     border_width: int = 2,
     stroke_width: float = 0.5,
     file_type: 'PNG'|'JPG'|'GIF'|'WEBP' = 'PNG',
-    font: str = 'Courier Prime.ttf',
+    font: str = 'courier_prime.ttf',
     width_ratio: float | 'auto' = 'auto',
     char: Optional[str] = None,
     enhance_image: bool = False,
