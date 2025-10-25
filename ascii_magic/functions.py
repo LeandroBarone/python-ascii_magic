@@ -25,19 +25,10 @@ def from_clipboard() -> AsciiArt:
     return AsciiArt.from_clipboard()
 
 
-def from_dalle(
+def from_gemini(
     prompt: str,
     api_key: Optional[str] = None,
+    model: Optional[str] = None,
     debug: bool = False,
 ) -> AsciiArt:
-    return AsciiArt.from_dalle(prompt, api_key, debug=debug)
-
-
-def from_stable_diffusion(
-    prompt: str,
-    api_key: str,
-    engine: Optional[str] = None,
-    steps: int = 30,
-    debug: bool = False,
-) -> AsciiArt:
-    return AsciiArt.from_stable_diffusion(prompt, api_key, engine=engine, steps=steps, debug=debug)
+    return AsciiArt.from_gemini(prompt, api_key, model, debug)
