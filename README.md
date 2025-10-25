@@ -6,8 +6,11 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.7 - Oct 2025
+- SwarmUI support: from_swarmui()
+
 ### v2.6 - Oct 2025
-- Gemini support
+- Gemini support: from_gemini()
 - to_image_file() stroke_width parameter
 - Removed Stable Diffusion and DALL-E support (API no longer available)
 
@@ -188,16 +191,16 @@ Creates an ```AsciiArt``` object with [Gemini](https://aistudio.google.com/), a 
 ```python
 from_gemini(
     prompt: str,
+    model: str = 'gemini-2.0-flash-preview-image-generation',
     api_key: Optional[str] = None,
-    model: Optional[str] = 'gemini-2.0-flash-preview-image-generation',
 ) -> AsciiArt
 ```
 
 Parameters:
 
 - ```prompt (str)```: a description of an image in natural language
-- ```api_key (str, optional)```: a Gemini API key
 - ```model (str, optional)```: the model to use for generation
+- ```api_key (str, optional)```: a Gemini API key
 
 Example:
 
@@ -205,13 +208,59 @@ Example:
 from ascii_magic import AsciiArt
 
 api_key = 'aFaKeGeMiNiApIkEy'
-my_art = AsciiArt.from_gemini('A portrait of a cow with noble clothes', api_key)
+my_art = AsciiArt.from_gemini('A portrait of a cow with noble clothes', api_key=api_key)
 my_art.to_image_file('example_gemini.png', columns=80, full_color=True)
 ```
 
 Result:
 
 ![ASCII Magic Gemini example](https://raw.githubusercontent.com/LeandroBarone/python-ascii_magic/master/example_gemini.png)
+
+## from_swarmui()
+
+Creates an ```AsciiArt``` object from [SwarmUI](https://swarmui.net/), a text-to-image user interface. Requires the URL of a SwarmUI instance, which is usually running on localhost, port 7801. The URL can be set in the environment variable ```SWARMUI_SERVER``` or passed as an argument.
+
+```python
+from_swarmui(
+    prompt: str,
+    width: int = 1280,
+    height: int = 720,
+    steps: int = 20,
+    raw_input: dict = {},
+    model: Optional[str] = 'auto',
+    server: str = 'http://localhost:7801',
+) -> AsciiArt
+```
+
+Parameters:
+
+- ```prompt (str)```: a description of an image in natural language
+- ```width (int, optional)```: the width of the image
+- ```height (int, optional)```: the height of the image
+- ```steps (int, optional)```: the number of steps to generate the image
+- ```raw_input (dict, optional)```: additional raw input to pass to the SwarmUI API
+- ```model (str | 'auto', optional)```: the model to use for generation, if 'auto', the first model will be used
+- ```server (str, optional)```: the URL of a SwarmUI instance
+
+Example:
+
+```python
+from ascii_magic import AsciiArt
+
+my_art = AsciiArt.from_swarmui(
+    'A portrait of a cow with noble clothes',
+    width=640,
+    height=480,
+    steps=50,
+    raw_input={
+        'seed': 42,
+        'cfgscale': 8.0,
+        'negative_prompt': 'low quality, pixelated, blurry',
+    },
+    server='http://localhost:12345'
+)
+my_art.to_image_file('example_swarmui.png', full_color=True)
+```
 
 ## from_url()
 
@@ -305,13 +354,13 @@ The module ```ascii_magic``` exposes two enums to handle color: ```Front``` and 
 
 ```python
 AsciiArt.to_ascii(
-    columns: Optional[int] = 120,
-    width_ratio: Optional[float] = 2.2,
-    char: Optional[str],
-    enhance_image: Optional[bool] = False,
-    monochrome: Optional[bool] = False,
-    front: Optional[Front],
-    back: Optional[Back]
+    columns: int = 120,
+    width_ratio: float = 2.2,
+    char: Optional[str] = None,
+    enhance_image: bool = False,
+    monochrome: bool = False,
+    front: Optional[Front] = None,
+    back: Optional[Back] = None,
 ) -> str
 ```
 
@@ -414,9 +463,9 @@ Identical to ```AsciiArt.to_html()```, but it also saves the markup to a barebon
 ```python
 AsciiArt.to_html_file(
     path: str,
-    styles: Optional[str] = '...',  # See description below
-    additional_styles: Optional[str] = '',
-    auto_open: Optional[bool] = False
+    styles: str = '...',  # See description below
+    additional_styles: str = '',
+    auto_open: bool = False
     # ... same parameters as AsciiArt.to_html()
 ) -> str
 ```
@@ -456,19 +505,19 @@ Generates a image file with the resulting ASCII art. Accepts the same parameters
 ```python
 AsciiArt.to_image_file(
     path: str,
-    width: Optional[int | 'auto'] = 'auto',
-    height: Optional[int | 'auto'] = 'auto',
-    border_thickness: Optional[int] = 2,
-    stroke_width: Optional[float] = 0.5,
-    file_type: Optional['PNG'|'JPG'|'GIF'|'WEBP'] = 'PNG',
-    font: Optional[str] = 'Courier Prime.ttf',
-    width_ratio: Optional[float | 'auto'] = 'auto',
+    width: int | 'auto' = 'auto',
+    height: int | 'auto' = 'auto',
+    border_width: int = 2,
+    stroke_width: float = 0.5,
+    file_type: 'PNG'|'JPG'|'GIF'|'WEBP' = 'PNG',
+    font: str = 'Courier Prime.ttf',
+    width_ratio: float | 'auto' = 'auto',
     char: Optional[str] = None,
-    enhance_image: Optional[bool] = False,
-    monochrome: Optional[bool] = False,
-    full_color: Optional[bool] = False,
+    enhance_image: bool = False,
+    monochrome: bool = False,
+    full_color: bool = False,
     front: Optional[str] = None,
-    back: Optional[str] = '#000000',
+    back: str = '#000000',
 ) -> list[list[dict]]
 ```
 
@@ -477,7 +526,7 @@ Parameters:
 - ```path (str)```: the output file path
 - ```width (int | 'auto', optional)```: the width of the image
 - ```height (int | 'auto', optional)```: the height of the image
-- ```border_thickness (int, optional)```: the thickness of the border around the image
+- ```border_width (int, optional)```: the width of the border around the entire image
 - ```stroke_width (float, optional)```: the width of the stroke around the characters
 - ```file_type (str, optional)```: the file type of the image, must be one of 'PNG', 'JPG', 'GIF', 'WEBP'
 - ```font (str, optional)```: the font to use for the image
@@ -504,7 +553,7 @@ Generates a 2d character list where each character is an object that contains th
 
 ```python
 AsciiArt.to_character_list(
-    full_color: Optional[bool] = False,
+    full_color: bool = False,
     # ... same parameters as AsciiArt.to_ascii()
 ) -> list[list[dict]]
 ```
