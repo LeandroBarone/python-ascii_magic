@@ -377,7 +377,7 @@ class AsciiArt:
             return art
 
     @staticmethod
-    def cc(color: Front | Back) -> str:
+    def cc(color: Union[Front, Back]) -> str:
         return '\033[' + str(color.value) + 'm'
 
     @staticmethod
