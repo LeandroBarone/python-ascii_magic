@@ -6,6 +6,9 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
+### v2.7.3 - Jan 2026
+- Fixed Python 3.9 [compatibility issue](https://github.com/LeandroBarone/python-ascii_magic/pull/28)
+
 ### v2.7 - Oct 2025
 - SwarmUI support: from_swarmui()
 
