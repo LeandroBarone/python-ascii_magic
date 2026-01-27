@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ascii_magic",
-    version="2.7.2",
+    version="2.7.3",
     author="Leandro Barone",
     author_email="web@leandrobarone.com.ar",
     description="Converts pictures into ASCII art",

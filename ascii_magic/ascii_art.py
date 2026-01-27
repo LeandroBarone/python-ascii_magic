@@ -437,7 +437,7 @@ class AsciiArt:
         img = Image.new('RGB', (img_width, img_height), color=back)
         draw = ImageDraw.Draw(img)
 
-        y = border_width - 1
+        y = border_width + int(line_height / 2) + 1
         for line in art:
             x = border_width
             for character in line:
@@ -451,7 +451,14 @@ class AsciiArt:
                 else:
                     fg_color = character['terminal-hex-color']
 
-                draw.text((x, y), character['character'], fill=fg_color, font=font.get_font(), stroke_width=stroke_width)
+                draw.text(
+                    (x, y),
+                    character['character'],
+                    anchor='lm',
+                    fill=fg_color,
+                    font=font.get_font(),
+                    stroke_width=stroke_width,
+                )
                 x += char_width
             y += line_height
 

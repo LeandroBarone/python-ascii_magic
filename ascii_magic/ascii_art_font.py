@@ -16,11 +16,11 @@ class AsciiArtFont():
     def get_font(self) -> ImageFont.ImageFont:
         return self._font
 
-    def get_char_size(self) -> tuple[int, int, int]:
-        bbox = self._font.getbbox('M')
+    def get_char_size(self, character: str = 'M') -> tuple[int, int, int]:
+        bbox = self._font.getbbox(character)
         char_width = int(bbox[2] - bbox[0])
         char_height = int(bbox[3] - bbox[1])
-        line_height = int(char_height + self.FONT_SIZE / 4)
+        line_height = int(char_height + self.FONT_SIZE / 3)
         return char_width, char_height, line_height
 
     def get_ratio(self) -> float:
