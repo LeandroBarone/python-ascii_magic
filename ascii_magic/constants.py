@@ -68,3 +68,5 @@ PALETTE = [[[(v / 255.0)**2.2 for v in x[0]], x[1], x[2]] for x in _COLOR_DATA]
 CHARS_BY_DENSITY = ' .`-_\':,;^=+/"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0QQ'
 
 DEFAULT_STYLES = 'display: inline-block; border-width: 4px 6px; border-color: black; color: white; border-style: solid; background-color:black; font-size: 8px;'
+
+DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash-image'

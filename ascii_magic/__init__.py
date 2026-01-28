@@ -1,5 +1,5 @@
 from ascii_magic.ascii_art import AsciiArt
-from ascii_magic.constants import Front, Back, CHARS_BY_DENSITY
+from ascii_magic.constants import Front, Back, CHARS_BY_DENSITY, DEFAULT_GEMINI_MODEL
 from ascii_magic.functions import (
     quick_test,
     from_image,
@@ -7,6 +7,7 @@ from ascii_magic.functions import (
     from_url,
     from_clipboard,
     from_gemini,
+    from_swarmui,
 )
 
 __all__ = [
@@ -21,6 +22,8 @@ __all__ = [
     "from_url",
     "from_clipboard",
     "from_gemini",
+    "from_swarmui",
     # Extra stuff
     "CHARS_BY_DENSITY",
+    "DEFAULT_GEMINI_MODEL",
 ]

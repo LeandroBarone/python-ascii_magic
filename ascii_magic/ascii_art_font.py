@@ -13,7 +13,7 @@ class AsciiArtFont():
         else:
             self._font = ImageFont.truetype(font=font, size=self.FONT_SIZE)
 
-    def get_font(self) -> ImageFont.ImageFont:
+    def get_font(self) -> ImageFont.FreeTypeFont:
         return self._font
 
     def get_char_size(self, character: str = 'M') -> tuple[int, int, int]:
