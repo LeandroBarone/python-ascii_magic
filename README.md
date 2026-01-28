@@ -6,7 +6,9 @@ Code based on [ProfOak's Ascii Py](https://github.com/ProfOak/Ascii_py/).
 
 # Changelog
 
-### v2.7.3 - Jan 2026
+### v2.7.4 - Jan 2026
+- Stricter type checking
+- Updated default Gemini model to 'gemini-2.5-flash-image'
 - Fixed Python 3.9 [compatibility issue](https://github.com/LeandroBarone/python-ascii_magic/pull/28)
 
 ### v2.7 - Oct 2025
