@@ -10,4 +10,4 @@ def test_from_gemini():
         pytest.skip('No Gemini API key found on environment (KEY=GEMINI_API_KEY)')
 
     my_art = AsciiArt.from_gemini('A hyperrealistic portrait of a cow with noble clothes, digital art')
-    my_art.to_terminal()
+    my_art.to_terminal(columns=100)

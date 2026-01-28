@@ -3,12 +3,12 @@ from ascii_magic import AsciiArt
 
 def test_from_url():
     my_art = AsciiArt.from_url('https://cataas.com/cat')
-    my_art.to_terminal()
+    my_art.to_terminal(columns=100)
 
 
 def test_wrong_url():
     try:
         my_art = AsciiArt.from_url('https://images2.alphacoders.com/902/thumb-1920-902946.png')
-        my_art.to_terminal()
+        my_art.to_terminal(columns=100)
     except OSError as e:
         print(f'Could not load the image, server said: {e.code} {e.msg}')  # type: ignore

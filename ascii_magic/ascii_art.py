@@ -1,15 +1,24 @@
-from ascii_magic.constants import Front, Back, Modes, CHARS_BY_DENSITY, DEFAULT_STYLES, PALETTE
 from ascii_magic.ascii_art_font import AsciiArtFont
+from ascii_magic.constants import (
+    Front,
+    Back,
+    Modes,
+    CHARS_BY_DENSITY,
+    DEFAULT_STYLES,
+    PALETTE,
+    DEFAULT_GEMINI_MODEL,
+)
 
 from PIL import Image, ImageDraw, ImageEnhance
 
 import io
-import os
 import json
-import webbrowser
+import os
 import urllib.request
-from typing import Optional, Union, Literal
+import urllib.parse
+import webbrowser
 from time import time
+from typing import Optional, Union, Literal
 
 
 class AsciiArt:
@@ -48,6 +57,8 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
+        if isinstance(art, list):
+            raise Exception('_img_to_art() returned a list in ASCII mode')
         return art
 
     def to_terminal(
@@ -71,6 +82,8 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
+        if isinstance(art, list):
+            raise Exception('_img_to_art() returned a list in TERMINAL mode')
         print(art)
         return art
 
@@ -96,7 +109,9 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
-        self._save_to_file(path, art)
+        if isinstance(art, list):
+            raise Exception('_img_to_art() returned a list in TERMINAL mode')
+        self._save_string_to_text_file(path, art)
         return art
 
     def to_image_file(
@@ -115,16 +130,16 @@ class AsciiArt:
         monochrome: bool = False,
         full_color: bool = False,
         front: Optional[Union[Front, str]] = None,
-        back: str = '#000000',
+        back: Union[Back, str] = '#000000',
         debug: bool = False,
     ):
         try:
-            font = AsciiArtFont(font)
+            ascii_font = AsciiArtFont(font)
         except FileNotFoundError:
             raise FileNotFoundError(f'Font {font} not found')
 
         if width_ratio == 'auto':
-            width_ratio = font.get_ratio()
+            width_ratio = ascii_font.get_ratio()
 
         art = self._img_to_art(
             mode=Modes.OBJECT,
@@ -138,11 +153,13 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
+        if isinstance(art, str):
+            raise Exception('_img_to_art() returned a string in OBJECT mode')
 
-        self._save_to_image_file(
+        self._save_list_to_image_file(
             path,
             art,
-            font=font,
+            font=ascii_font,
             width=width,
             height=height,
             border_width=border_width,
@@ -175,6 +192,8 @@ class AsciiArt:
             full_color=full_color,
             debug=debug,
         )
+        if isinstance(art, list):
+            raise Exception('_img_to_art() returned a list in HTML mode')
         return art
 
     def to_html_file(
@@ -201,6 +220,8 @@ class AsciiArt:
             full_color=full_color,
             debug=debug,
         )
+        if isinstance(art, list):
+            raise Exception('_img_to_art() returned a list in HTML mode')
         self._save_to_html_file(
             path,
             art,
@@ -221,7 +242,7 @@ class AsciiArt:
         front: Optional[Front] = None,
         debug: bool = False,
     ) -> list[list[dict]]:
-        return self._img_to_art(
+        art = self._img_to_art(
             mode=Modes.OBJECT,
             columns=columns,
             width_ratio=width_ratio,
@@ -232,6 +253,9 @@ class AsciiArt:
             front=front,
             debug=debug,
         )
+        if isinstance(art, str):
+            raise Exception('_img_to_art() returned a string in OBJECT mode')
+        return art
 
     def _img_to_art(
         self,
@@ -242,10 +266,10 @@ class AsciiArt:
         enhance_image: bool = False,
         monochrome: bool = False,
         full_color: bool = False,
-        back: Optional[Back] = None,
-        front: Optional[Front] = None,
+        front: Optional[Union[Front, str]] = None,
+        back: Optional[Union[Back, str]] = None,
         debug: bool = False,
-    ) -> str:
+    ) -> Union[str, list[list[dict]]]:
         if monochrome and full_color:
             full_color = False
 
@@ -286,12 +310,14 @@ class AsciiArt:
             line = []
             for w in range(img_w):
                 # get brightness value
-                brightness = grayscale_img.getpixel((w, h)) / 255
+                brightness = self.get_brightness_value(grayscale_img, w, h)
                 pixel = rgb_img.getpixel((w, h))
 
                 # getpixel() may return an int, instead of tuple of ints, if the source img is a PNG with a transparency layer
-                if isinstance(pixel, int):
+                if isinstance(pixel, (int, float)):
                     pixel = (pixel, pixel, 255) if color_palette is None else tuple(color_palette[pixel * 3:pixel * 3 + 3])
+                elif pixel is None:
+                    pixel = (0, 0, 0)
 
                 rgb = [(v / 255.0)**2.2 for v in pixel]
                 char = chars[int(brightness * (len(chars) - 1))]
@@ -312,11 +338,11 @@ class AsciiArt:
             art = ''
             for line in lines:
                 if back:
-                    art += self.cc(back)
+                    art += self.get_charcode(back)
 
                 previous_color = None
                 for character in line:
-                    current_color = self.cc(front) if front else character['terminal-color']
+                    current_color = self.get_charcode(front) if front else character['terminal-color']
                     if current_color == previous_color:
                         art += character['character']
                     else:
@@ -324,9 +350,9 @@ class AsciiArt:
                         art += current_color + character['character']
 
                 if back:
-                    art += self.cc(Back.RESET)
+                    art += self.get_charcode(Back.RESET)
 
-                art += self.cc(Front.RESET)
+                art += self.get_charcode(Front.RESET)
                 art += '\n'
             return art
 
@@ -377,11 +403,50 @@ class AsciiArt:
             return art
 
     @staticmethod
-    def cc(color: Union[Front, Back]) -> str:
+    def get_brightness_value(img: Image.Image, w: int, h: int) -> float:
+        pixel = img.getpixel((w, h))
+        if isinstance(pixel, (float, int)):
+            return pixel / 255
+        elif isinstance(pixel, (list, tuple)) and len(pixel) > 0:
+            return float(pixel[0]) / 255
+        else:
+            return 0
+
+    @staticmethod
+    def get_charcode(color: Union[Front, Back, str]) -> str:
+        if isinstance(color, str):
+            return ''
         return '\033[' + str(color.value) + 'm'
 
     @staticmethod
-    def l2_min(v1: list, v2: list) -> float:
+    def cc(color: Union[Front, Back, str]) -> str:
+        # cc() is now an alias for get_charcode(), for backwards compatibility
+        return AsciiArt.get_charcode(color)
+
+    @staticmethod
+    def color_to_hex(color: Union[Front, Back, str]) -> str:
+        if isinstance(color, (Front, Back)):
+            if color.name == 'BLACK': return '#000000'
+            if color.name == 'RED': return '#FF0000'
+            if color.name == 'GREEN': return '#00FF00'
+            if color.name == 'YELLOW': return '#FFFF00'
+            if color.name == 'BLUE': return '#0000FF'
+            if color.name == 'MAGENTA': return '#FF00FF'
+            if color.name == 'CYAN': return '#00FFFF'
+            if color.name == 'WHITE': return '#FFFFFF'
+            if color.name == 'LIGHTBLACK': return '#222222'
+            if color.name == 'LIGHTRED': return '#FF6666'
+            if color.name == 'LIGHTGREEN': return '#66FF66'
+            if color.name == 'LIGHTYELLOW': return '#FFFF66'
+            if color.name == 'LIGHTBLUE': return '#6666FF'
+            if color.name == 'LIGHTMAGENTA': return '#FF66FF'
+            if color.name == 'LIGHTCYAN': return '#66FFFF'
+            if color.name == 'LIGHTWHITE': return '#FFFFFF'
+            raise ValueError('Unknown color ' + str(color))
+        return color
+
+    @staticmethod
+    def l2_min(v1: Union[list, tuple], v2: Union[list, tuple]) -> float:
         return (v1[0] - v2[0])**2 + (v1[1] - v2[1])**2 + (v1[2] - v2[2])**2
 
     @staticmethod
@@ -399,18 +464,18 @@ class AsciiArt:
 
         return {
             'character': char,
-            'terminal-color': AsciiArt.cc(PALETTE[index][1]),
+            'terminal-color': AsciiArt.get_charcode(PALETTE[index][1]),
             'terminal-hex-color': PALETTE[index][2],
             'full-hex-color': '#{:02x}{:02x}{:02x}'.format(*(int(c * 200 + 55) for c in rgb)),
         }
 
     @staticmethod
-    def _save_to_file(path: str, art: str) -> None:
+    def _save_string_to_text_file(path: str, art: str) -> None:
         with open(path, 'w') as f:
             f.write(art)
 
     @staticmethod
-    def _save_to_image_file(
+    def _save_list_to_image_file(
         path: str,
         art: list,
         width: Union[int, Literal['auto']] = 'auto',
@@ -421,12 +486,19 @@ class AsciiArt:
         font: Optional[AsciiArtFont] = None,
         monochrome: bool = False,
         full_color: bool = False,
-        front: Optional[str] = None,
-        back: str = '#000000',
+        front: Optional[Union[Front, str]] = None,
+        back: Optional[Union[Back, str]] = None,
     ) -> None:
         if font is None:
             font = AsciiArtFont('courier_prime.ttf')
         char_width, _, line_height = font.get_char_size()
+
+        if back is None:
+            back = '#000000'
+        if isinstance(back, Back):
+            back = AsciiArt.color_to_hex(back)
+        if isinstance(front, Front):
+            front = AsciiArt.color_to_hex(front)
 
         cols = max(len(line) for line in art)
         rows = len(art)
@@ -512,11 +584,11 @@ class AsciiArt:
                     continue
                 print(
                     f.name + ' on ' + b.name + ' = ',
-                    cls.cc(f),
-                    cls.cc(b),
+                    cls.get_charcode(f),
+                    cls.get_charcode(b),
                     'ASCII_MAGIC',
-                    cls.cc(Front.RESET),
-                    cls.cc(Back.RESET),
+                    cls.get_charcode(Front.RESET),
+                    cls.get_charcode(Back.RESET),
                 )
 
     @classmethod
@@ -542,7 +614,7 @@ class AsciiArt:
     def from_gemini(
         cls,
         prompt: str,
-        model: str = None,
+        model: str = DEFAULT_GEMINI_MODEL,
         api_key: Optional[str] = None,
         debug: bool = False
     ) -> 'AsciiArt':
@@ -550,7 +622,7 @@ class AsciiArt:
         return AsciiArt(image)
 
     @classmethod
-    def from_swamui(
+    def from_swarmui(
         cls,
         prompt: str,
         width: int = 1280,
@@ -587,14 +659,19 @@ class AsciiArt:
     def _load_clipboard(cls) -> Image.Image:
         try:
             from PIL import ImageGrab
-            img = ImageGrab.grabclipboard()
+            result = ImageGrab.grabclipboard()
         except (NotImplementedError, ImportError):
-            img = cls._load_clipboard_linux()
+            result = cls._load_clipboard_linux()
 
-        if not img:
+        if isinstance(result, list):  # win32 file list
+            try:
+                return Image.open(result[0])
+            except Exception:
+                raise OSError('The clipboard does not contain an image')
+        elif isinstance(result, Image.Image):  # win32 or linux PIL image
+            return result
+        else:
             raise OSError('The clipboard does not contain an image')
-
-        return img
 
     @classmethod
     def _load_clipboard_linux(cls) -> Image.Image:
@@ -629,7 +706,7 @@ class AsciiArt:
     def _load_gemini(
         cls,
         prompt: str,
-        model: str = None,
+        model: str = DEFAULT_GEMINI_MODEL,
         api_key: Optional[str] = None,
         debug: bool = False
     ) -> Image.Image:
@@ -647,9 +724,6 @@ class AsciiArt:
         if not api_key:
             raise ValueError('You must set up an API key before accessing Gemini')
 
-        if not model:
-            model = 'gemini-2.0-flash-preview-image-generation'
-
         client = genai.Client(
             api_key=api_key,
         )
@@ -662,6 +736,9 @@ class AsciiArt:
             ),
         )
 
+        if not response or not response.parts:
+            raise OSError('No images generated')
+
         if debug:
             with open(str(int(time())) + '_gemini.txt', 'w') as f:
                 f.write(str(response))
@@ -669,6 +746,8 @@ class AsciiArt:
         for part in response.parts:
             if part.inline_data:
                 generated_image = part.as_image()
+                if not generated_image or not generated_image.image_bytes:
+                    continue
                 if debug:
                     try:
                         with open(str(int(time())) + '_gemini.png', 'wb') as f:
