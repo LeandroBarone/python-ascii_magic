@@ -4,7 +4,7 @@ import pytest
 import os
 
 
-def test_from_swamui():
+def test_from_swarmui():
     if not os.environ.get('SWARMUI_SERVER'):
         pytest.skip('No SwarmUI server found on environment (KEY=SWARMUI_SERVER)')
 
