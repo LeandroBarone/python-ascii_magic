@@ -4,11 +4,11 @@ import pytest
 import os
 
 
-def test_from_swamui():
+def test_from_swarmui():
     if not os.environ.get('SWARMUI_SERVER'):
         pytest.skip('No SwarmUI server found on environment (KEY=SWARMUI_SERVER)')
 
-    my_art = AsciiArt.from_swamui(
+    my_art = AsciiArt.from_swarmui(
         'A hyperrealistic portrait of a cow with noble clothes, digital art',
         raw_input={
             'width': 1344,
