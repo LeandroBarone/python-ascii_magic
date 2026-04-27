@@ -73,3 +73,12 @@ def test_to_image_file_square():
         width=200,
         height=200,
     )
+
+
+def test_to_image_file_jpg():
+    my_art = AsciiArt.from_image('lion.jpg')
+    my_art.to_image_file(
+        'output_lion.jpg',
+        file_type='JPG',
+        columns=60,
+    )

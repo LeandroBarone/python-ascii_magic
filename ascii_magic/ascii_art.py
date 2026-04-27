@@ -571,7 +571,9 @@ class AsciiArt:
         if target_width != img_width or target_height != img_height:
             img = img.resize((target_width, target_height), RESAMPLING_METHOD)
 
-        img.save(path, file_type)
+        # Pillow uses "JPEG" while the public API accepts the common alias "JPG".
+        pil_format = 'JPEG' if file_type.upper() == 'JPG' else file_type
+        img.save(path, pil_format)
 
     @staticmethod
     def _save_to_html_file(
