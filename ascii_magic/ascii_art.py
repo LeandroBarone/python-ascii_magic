@@ -27,6 +27,21 @@ import webbrowser
 from time import time
 
 
+def _pillow_major_version(version: str) -> int:
+    """Return the major component of a Pillow version string.
+
+    Plain string comparison breaks once the major version reaches two
+    digits ('10.0.0' < '9.0.0' lexicographically), so parse it instead.
+    """
+    major = ''
+    for char in str(version).strip():
+        if char.isdigit():
+            major += char
+        elif major:
+            break
+    return int(major) if major else 0
+
+
 class AsciiArt:
     __VERSION__ = __version__
     __PILLOW_VERSION__ = PILLOW_VERSION
@@ -171,7 +186,7 @@ class AsciiArt:
             width=width,
             height=height,
             border_width=border_width,
-            stroke_width=stroke_width if PILLOW_VERSION >= '9.0.0' else int(stroke_width),
+            stroke_width=stroke_width if _pillow_major_version(PILLOW_VERSION) >= 9 else int(stroke_width),
             file_type=file_type,
             monochrome=monochrome,
             full_color=full_color,
